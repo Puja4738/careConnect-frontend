@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AuthService } from '../../../services/auth.service';
 import { SupervisorService } from '../../../services/supervisor.service';
-import { BlackoutService } from '../../../services/blackout.service';
+import { AdminService } from '../../../services/admin.service';
 
 @Component({
   selector: 'app-supervisor',
@@ -10,37 +10,30 @@ import { BlackoutService } from '../../../services/blackout.service';
 })
 export class SupervisorComponent implements OnInit {
 
-  activeTab: 'workload' | 'assignments' | 'performance' | 'coverage' | 'handoffs' | 'escalations' = 'workload';
+  activeTab: 'workload' | 'performance' | 'coverage' | 'handoffs' | 'escalations' = 'workload';
 
   orgUserId!: number;
   isLoading = true;
 
   // ── Workload ──────────────────────────────────────────────────────────────
-  workload: any[]       = [];
-  workloadFilter        = 'ALL';
+  workload: any[]    = [];
+  workloadFilter     = 'ALL';
 
-  // ── Job Assignments ───────────────────────────────────────────────────────
+  // ── Job Assignments (kept for handoffs / escalations selects) ─────────────
   jobAssignments: any[] = [];
-  assignmentFilter      = 'ALL';
-
-  // Assign modal
-  assignModal: any      = null;
-  selectedNurseUserId   = '';
-  isAssigning           = false;
-  assignError           = '';
-  assignSuccess         = '';
-  assignBlackoutWarning = '';
 
   // ── Performance ───────────────────────────────────────────────────────────
-  performance: any[]    = [];
+  performance: any[] = [];
 
   // ── Team Roster / Coverage ────────────────────────────────────────────────
-  rosterDeptFilter        = '';
-  rosterModal: any        = null;   // nurse being reassigned
-  selectedNewJobId        = '';
-  isRosterReassigning     = false;
-  rosterReassignError     = '';
-  rosterReassignSuccess   = '';
+  orgDepartments: string[]  = [];   // from org profile specializations
+  rosterDeptFilter          = '';
+  rosterModal: any          = null;
+  rosterModalDept           = '';   // dept chosen inside the reassign modal
+  selectedNewJobId          = '';
+  isRosterReassigning       = false;
+  rosterReassignError       = '';
+  rosterReassignSuccess     = '';
 
   // ── Remove Nurse ──────────────────────────────────────────────────────────
   removingNurseUserId: number | null = null;
@@ -48,42 +41,57 @@ export class SupervisorComponent implements OnInit {
   removeSuccess = '';
 
   // ── Handoff Notes ─────────────────────────────────────────────────────────
-  handoffs: any[]         = [];
-  handoffNurseId          = '';
-  handoffJobId            = '';
-  handoffNote             = '';
-  isSendingHandoff        = false;
-  handoffError            = '';
-  handoffSuccess          = '';
+  handoffs: any[]    = [];
+  handoffNurseId     = '';
+  handoffJobId       = '';
+  handoffNote        = '';
+  isSendingHandoff   = false;
+  handoffError       = '';
+  handoffSuccess     = '';
 
   // ── Escalations ───────────────────────────────────────────────────────────
-  escalations: any[]      = [];
-  escalationFilter        = 'ALL';
-  escIssueType            = '';
-  escEntityType           = '';
-  escEntityId             = '';
-  escDescription          = '';
-  isEscalating            = false;
-  escalationError         = '';
-  escalationSuccess       = '';
+  escalations: any[] = [];
+  escalationFilter   = 'ALL';
+  escIssueType       = '';
+  escEntityType      = '';
+  escEntityId        = '';
+  escDescription     = '';
+  isEscalating       = false;
+  escalationError    = '';
+  escalationSuccess  = '';
 
   readonly ISSUE_TYPES = [
-    { value: 'NURSE_PERFORMANCE',    label: 'Nurse Performance' },
-    { value: 'SCHEDULING_CONFLICT',  label: 'Scheduling Conflict' },
-    { value: 'PATIENT_CONCERN',      label: 'Patient Concern' },
-    { value: 'QUALITY_ISSUE',        label: 'Quality Issue' },
-    { value: 'OTHER',                label: 'Other' },
+    { value: 'NURSE_PERFORMANCE',   label: 'Nurse Performance' },
+    { value: 'SCHEDULING_CONFLICT', label: 'Scheduling Conflict' },
+    { value: 'PATIENT_CONCERN',     label: 'Patient Concern' },
+    { value: 'QUALITY_ISSUE',       label: 'Quality Issue' },
+    { value: 'OTHER',               label: 'Other' },
   ];
 
   constructor(
     private auth: AuthService,
     private supervisorSvc: SupervisorService,
-    private blackoutSvc: BlackoutService
+    private adminSvc: AdminService
   ) {}
 
   ngOnInit(): void {
     this.orgUserId = this.auth.getUserId()!;
+    this.loadOrgProfile();
     this.loadAll();
+  }
+
+  private loadOrgProfile(): void {
+    this.adminSvc.getOrgProfile(this.orgUserId).subscribe({
+      next: (data) => {
+        if (data?.specializations) {
+          this.orgDepartments = data.specializations
+            .split(',')
+            .map((s: string) => s.trim())
+            .filter((s: string) => s);
+        }
+      },
+      error: () => {}
+    });
   }
 
   private loadAll(): void {
@@ -111,22 +119,22 @@ export class SupervisorComponent implements OnInit {
 
   private buildPerformance(): void {
     this.performance = this.workload.map(n => ({
-      nurseName:     n.nurseName,
-      specialization:n.specialization,
-      experience:    n.experienceYears,
-      license:       n.licenseNumber,
-      activeJobs:    n.activeJobs,
-      completedJobs: n.completedJobs,
-      totalJobs:     n.totalJobs,
-      status:        n.workloadStatus,
-      nurseRating:   n.nurseRating
+      nurseName:      n.nurseName,
+      specialization: n.specialization,
+      experience:     n.experienceYears,
+      license:        n.licenseNumber,
+      activeJobs:     n.activeJobs,
+      completedJobs:  n.completedJobs,
+      totalJobs:      n.totalJobs,
+      status:         n.workloadStatus,
+      nurseRating:    n.nurseRating
     }));
   }
 
   ratingStars(rating: number | null): string {
     if (!rating) return '—';
-    const full  = Math.floor(rating);
-    const half  = rating - full >= 0.5 ? 1 : 0;
+    const full = Math.floor(rating);
+    const half = rating - full >= 0.5 ? 1 : 0;
     return '★'.repeat(full) + (half ? '½' : '') + ` (${rating.toFixed(1)})`;
   }
 
@@ -161,111 +169,17 @@ export class SupervisorComponent implements OnInit {
   }
 
   workloadBarWidth(n: any): number {
-    const max = Math.max(...this.workload.map(w => w.activeJobs), 1);
-    return Math.round((n.activeJobs / max) * 100);
+    // Use upcoming shifts if available (more accurate), fall back to active jobs
+    const getValue = (w: any) => w.upcomingShifts ?? w.activeJobs ?? 0;
+    const max = Math.max(...this.workload.map(getValue), 1);
+    return Math.round((getValue(n) / max) * 100);
   }
 
   get totalAvailable(): number  { return this.workload.filter(n => n.workloadStatus === 'AVAILABLE').length; }
   get totalActive(): number     { return this.workload.filter(n => n.workloadStatus === 'ACTIVE').length; }
   get totalOverloaded(): number { return this.workload.filter(n => n.workloadStatus === 'OVERLOADED').length; }
 
-  // ── Job Assignments ───────────────────────────────────────────────────────
-
-  get filteredAssignments(): any[] {
-    if (this.assignmentFilter === 'UNASSIGNED') return this.jobAssignments.filter(j => !j.assignedNurseId);
-    if (this.assignmentFilter === 'ASSIGNED')   return this.jobAssignments.filter(j =>  j.assignedNurseId);
-    if (this.assignmentFilter === 'ACTIVE')     return this.jobAssignments.filter(j => j.jobStatus === 'ACTIVE');
-    if (this.assignmentFilter === 'CLOSED')     return this.jobAssignments.filter(j => j.jobStatus === 'CLOSED');
-    return this.jobAssignments;
-  }
-
-  get unassignedCount(): number { return this.jobAssignments.filter(j => !j.assignedNurseId).length; }
-  get assignedCount():   number { return this.jobAssignments.filter(j =>  j.assignedNurseId).length; }
-
-  openAssignModal(job: any): void {
-    this.assignModal          = job;
-    this.selectedNurseUserId  = '';
-    this.assignError          = '';
-    this.assignSuccess        = '';
-    this.assignBlackoutWarning = '';
-  }
-
-  closeAssignModal(): void { this.assignModal = null; }
-
-  onNurseSelect(): void {
-    this.assignBlackoutWarning = '';
-    const nurseUserId = +this.selectedNurseUserId;
-    if (!nurseUserId || !this.assignModal) return;
-    this.blackoutSvc.getByNurse(nurseUserId).subscribe({
-      next: (dates) => {
-        if (!dates.length) return;
-        const jobStart    = this.assignModal.jobStartDate?.slice(0, 10);
-        const jobDeadline = this.assignModal.jobDeadline?.slice(0, 10);
-        const blocked = dates.filter(d =>
-          (jobStart    && d >= jobStart    && (!jobDeadline || d <= jobDeadline)) ||
-          (jobDeadline && d === jobDeadline)
-        );
-        if (blocked.length) {
-          this.assignBlackoutWarning =
-            `This nurse has blocked ${blocked.length} date(s) within this job period: ${blocked.slice(0,3).join(', ')}${blocked.length > 3 ? '…' : ''}.`;
-        }
-      },
-      error: () => {}
-    });
-  }
-
-  isReassigning(job: any): boolean { return !!job.assignedNurseId; }
-
-  confirmAssign(): void {
-    if (!this.selectedNurseUserId) { this.assignError = 'Please select a nurse.'; return; }
-    const nurseUserId = +this.selectedNurseUserId;
-    this.isAssigning  = true;
-    this.assignError  = '';
-
-    const action$ = this.isReassigning(this.assignModal)
-      ? this.supervisorSvc.reassignNurse(this.orgUserId, this.assignModal.jobId, nurseUserId)
-      : this.supervisorSvc.assignNurse(this.orgUserId, this.assignModal.jobId, nurseUserId);
-
-    action$.subscribe({
-      next: (updated) => {
-        const idx = this.jobAssignments.findIndex(j => j.jobId === this.assignModal.jobId);
-        if (idx !== -1) this.jobAssignments[idx] = updated;
-        // Update workload too
-        this.supervisorSvc.getWorkload(this.orgUserId).subscribe({
-          next: (data) => { this.workload = data || []; this.buildPerformance(); }
-        });
-        this.isAssigning   = false;
-        this.assignSuccess = 'Nurse assigned successfully!';
-        setTimeout(() => this.closeAssignModal(), 1800);
-      },
-      error: (err: Error) => {
-        this.assignError = err.message;
-        this.isAssigning = false;
-      }
-    });
-  }
-
-  jobStatusClass(status: string): string {
-    switch ((status || '').toUpperCase()) {
-      case 'ACTIVE': return 'js-active';
-      case 'CLOSED': return 'js-closed';
-      default:       return 'js-active';
-    }
-  }
-
-  formatSalary(min: number, max: number): string {
-    if (!min && !max) return '—';
-    const fmt = (n: number) => '₹' + Number(n).toLocaleString('en-IN');
-    if (min && max) return `${fmt(min)} – ${fmt(max)}`;
-    return fmt(min || max);
-  }
-
-  formatDeadline(dt: string): string {
-    if (!dt) return '—';
-    return new Date(dt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-  }
-
-  // ── Performance sort ──────────────────────────────────────────────────────
+  // ── Performance ───────────────────────────────────────────────────────────
 
   perfSort: 'totalJobs' | 'activeJobs' | 'completedJobs' = 'totalJobs';
 
@@ -275,51 +189,73 @@ export class SupervisorComponent implements OnInit {
 
   // ── Team Roster / Coverage ────────────────────────────────────────────────
 
-  // All unique departments from ALL org jobs (for filter chips)
-  get departments(): string[] {
-    const depts = this.jobAssignments.map(j => j.department).filter(Boolean);
-    return [...new Set(depts)].sort();
-  }
-
-  // Nurse-centric roster: one row per hired nurse, enriched with their current job info
   get filteredRoster(): any[] {
     const rows = this.workload.map(nurse => {
-      const job = this.jobAssignments.find(j => j.assignedNurseUserId === nurse.nurseUserId) || null;
+      const jobs = this.jobAssignments.filter(j => j.assignedNurseUserId === nurse.nurseUserId);
+      const departments = [...new Set(jobs.map((j: any) => j.department).filter(Boolean))] as string[];
       return {
-        nurseUserId:       nurse.nurseUserId,
-        nurseName:         nurse.nurseName,
-        specialization:    nurse.specialization,
-        workloadStatus:    nurse.workloadStatus,
-        activeJobs:        nurse.activeJobs,
-        department:        job?.department   || null,
-        jobTitle:          job?.jobTitle     || null,
-        jobType:           job?.jobType      || null,
-        jobId:             job?.jobId        || null,
-        location:          job?.location     || null,
-        currentJob:        job,
+        nurseUserId:    nurse.nurseUserId,
+        nurseName:      nurse.nurseName,
+        specialization: nurse.specialization,
+        workloadStatus: nurse.workloadStatus,
+        activeJobs:     nurse.activeJobs,
+        departments,
+        jobs,
+        // single-field compat for modal
+        department:  jobs[0]?.department || null,
+        jobTitle:    jobs[0]?.jobTitle   || null,
+        jobType:     jobs[0]?.jobType    || null,
+        jobId:       jobs[0]?.jobId      || null,
+        location:    jobs[0]?.location   || null,
+        currentJob:  jobs[0] || null,
       };
     });
     if (!this.rosterDeptFilter) return rows;
-    return rows.filter(r => r.department === this.rosterDeptFilter);
+    return rows.filter(r => r.departments.includes(this.rosterDeptFilter));
   }
 
   openRosterReassign(nurse: any): void {
     this.rosterModal          = nurse;
+    this.rosterModalDept      = '';
     this.selectedNewJobId     = '';
     this.rosterReassignError  = '';
-    this.rosterReassignSuccess= '';
+    this.rosterReassignSuccess = '';
   }
-  closeRosterReassign(): void { this.rosterModal = null; }
+
+  closeRosterReassign(): void {
+    this.rosterModal     = null;
+    this.rosterModalDept = '';
+  }
+
+  /** Jobs belonging to the department chosen inside the reassign modal */
+  get jobsForRosterDept(): any[] {
+    if (!this.rosterModalDept) return [];
+    return this.jobAssignments.filter(j => j.department === this.rosterModalDept);
+  }
+
+  onRosterDeptChange(): void {
+    this.selectedNewJobId = '';
+  }
+
+  isAlreadyAssigned(jobId: number): boolean {
+    if (!this.rosterModal?.jobs) return false;
+    return this.rosterModal.jobs.some((a: any) => a.jobId === jobId);
+  }
 
   confirmRosterReassign(): void {
     if (!this.selectedNewJobId) { this.rosterReassignError = 'Please select a job.'; return; }
     this.isRosterReassigning = true;
     this.rosterReassignError = '';
     this.supervisorSvc.assignNurse(this.orgUserId, +this.selectedNewJobId, this.rosterModal.nurseUserId).subscribe({
-      next: (updated) => {
-        const idx = this.jobAssignments.findIndex(j => j.jobId === +this.selectedNewJobId);
-        if (idx !== -1) this.jobAssignments[idx] = updated;
-        this.isRosterReassigning  = false;
+      next: () => {
+        // Refresh workload and job assignments so roster reflects the new state
+        this.supervisorSvc.getWorkload(this.orgUserId).subscribe({
+          next: (data) => { this.workload = data || []; this.buildPerformance(); }
+        });
+        this.supervisorSvc.getJobAssignments(this.orgUserId).subscribe({
+          next: (data) => { this.jobAssignments = data || []; }
+        });
+        this.isRosterReassigning   = false;
         this.rosterReassignSuccess = 'Nurse assigned to new department!';
         setTimeout(() => this.closeRosterReassign(), 1800);
       },
@@ -389,8 +325,8 @@ export class SupervisorComponent implements OnInit {
     if (!this.escIssueType || !this.escDescription.trim()) {
       this.escalationError = 'Issue type and description are required.'; return;
     }
-    this.isEscalating     = true;
-    this.escalationError  = '';
+    this.isEscalating    = true;
+    this.escalationError = '';
     this.supervisorSvc.createEscalation(
       this.orgUserId, this.escIssueType,
       this.escEntityType || null,

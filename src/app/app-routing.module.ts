@@ -39,6 +39,7 @@ import { TrainingComponent } from './pages/nurse/training/training.component';
 import { MyPatientsComponent } from './pages/nurse/my-patients/my-patients.component';
 import { NotificationsComponent } from './pages/nurse/notifications/notifications.component';
 import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.component';
+import { NurseComplianceComponent } from './pages/nurse/nurse-compliance/nurse-compliance.component';
 
 const routes: Routes = [
   // Public — always accessible
@@ -83,7 +84,8 @@ const routes: Routes = [
   { path: 'nurse-training',       component: TrainingComponent,       canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
   { path: 'nurse-my-patients',    component: MyPatientsComponent,     canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
   { path: 'nurse-notifications',  component: NotificationsComponent,  canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
-  { path: 'nurse-telehealth',    component: TelehealthComponent,     canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
+  { path: 'nurse-telehealth',    component: TelehealthComponent,        canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
+  { path: 'nurse-compliance',   component: NurseComplianceComponent,   canActivate: [authGuard, roleGuard], data: { role: 'NURSE' } },
 
   // Fallback
   { path: '**', redirectTo: '' },

@@ -43,6 +43,7 @@ import { TrainingComponent } from './pages/nurse/training/training.component';
 import { MyPatientsComponent } from './pages/nurse/my-patients/my-patients.component';
 import { NotificationsComponent } from './pages/nurse/notifications/notifications.component';
 import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.component';
+import { NurseComplianceComponent } from './pages/nurse/nurse-compliance/nurse-compliance.component';
 
 @NgModule({
   declarations: [
@@ -83,6 +84,7 @@ import { TelehealthComponent } from './pages/nurse/telehealth/telehealth.compone
     MyPatientsComponent,
     NotificationsComponent,
     TelehealthComponent,
+    NurseComplianceComponent,
   ],
   imports: [
     BrowserModule,

@@ -369,6 +369,24 @@
               <option *ngFor="let a of ACCREDITATION_OPTIONS" [value]="a">{{ a }}</option>
             </select>
           </div>
+          <div class="col-12">
+            <label class="edit-label">Established <small style="color:#9ab8b0;font-weight:400;">(Month &amp; Year — optional)</small></label>
+            <div class="d-flex gap-2 align-items-start">
+              <select class="edit-input" formControlName="establishedMonth" style="flex:0 0 160px;">
+                <option value="">Month (optional)</option>
+                <option *ngFor="let m of MONTHS" [value]="m.value">{{ m.label }}</option>
+              </select>
+              <div style="flex:1;">
+                <input type="number" class="edit-input" formControlName="establishedYear"
+                       placeholder="Year (e.g. 2010)"
+                       [min]="1900" [max]="currentYear"
+                       [class.input-err]="editForm.get('establishedYear')?.dirty && editForm.get('establishedYear')?.invalid">
+                <small class="err" *ngIf="editForm.get('establishedYear')?.dirty && editForm.get('establishedYear')?.invalid">
+                  Enter a valid year (1900–{{ currentYear }}).
+                </small>
+              </div>
+            </div>
+          </div>
           <div class="col-md-6">
             <label class="edit-label">Bed Capacity</label>
             <input type="number" class="edit-input" formControlName="bedCapacity" placeholder="e.g. 200"

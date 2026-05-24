@@ -65,5 +65,11 @@
 .badge-compliant    { background: #d4edda; color: #155724; }
 .badge-pending      { background: #fff4e0; color: #d97706; }
 .badge-noncompliant { background: #fde8e8; color: #c0392b; }
+.badge-submitted    { background: #dbeafe; color: #1d4ed8; }
+.rec-icon-blue      { background: #dbeafe !important; color: #1d4ed8 !important; }
+.submitted-note     { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; color: #1e40af; }
+.tab-count          { background: rgba(0,0,0,0.12); color: inherit; border-radius: 20px; padding: 1px 7px; font-size: 0.7rem; margin-left: 4px; }
 .toast-success { background: #d4edda; color: #155724; border-radius: 12px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; }
 .empty-state { background: white; border-radius: 18px; padding: 3rem; text-align: center; color: #9ab8b2; box-shadow: 0 4px 14px -4px rgba(0,20,15,0.06); }
+.doc-link { font-size: 0.78rem; font-weight: 600; color: #1d4ed8; text-decoration: none; }
+.doc-link:hover { text-decoration: underline; }

@@ -66,3 +66,51 @@
 .ocr-desc  { margin-top: 3px; font-size: 0.76rem; }
 
 .toast-success { background: #d4edda; color: #155724; border-radius: 12px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; }
+
+/* PAY SALARY BUTTON */
+.btn-pay-salary { background: #fff8e1; color: #b45309; border: 1.5px solid #fcd34d; border-radius: 20px; padding: 5px 13px; font-size: 0.77rem; font-weight: 600; cursor: pointer; transition: all 0.18s; white-space: nowrap; }
+.btn-pay-salary:hover { background: #fef3c7; border-color: #f59e0b; }
+
+/* PAY SALARY MODAL */
+.pay-modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1040; }
+.pay-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 520px; max-width: calc(100vw - 24px); background: white; border-radius: 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.2); z-index: 1050; display: flex; flex-direction: column; overflow: hidden; }
+.pay-modal-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.1rem 1.3rem 0.9rem; border-bottom: 1.5px solid #f0f5f3; background: #f9fffe; }
+.pay-modal-header h5 { color: #0f2d22; font-size: 0.97rem; font-weight: 700; margin: 0; }
+.pay-modal-close { background: none; border: none; font-size: 1.5rem; color: #9ab8b0; cursor: pointer; line-height: 1; padding: 0; }
+.pay-modal-close:hover { color: #c0392b; }
+.pay-modal-body { padding: 1.1rem 1.3rem; overflow-y: auto; max-height: 70vh; }
+.pay-modal-footer { padding: 0.9rem 1.3rem; border-top: 1.5px solid #f0f5f3; display: flex; justify-content: flex-end; gap: 10px; background: #f9fffe; }
+
+/* SLIP SECTIONS */
+.slip-section { background: #f9fffe; border: 1.5px solid #e0eeea; border-radius: 14px; padding: 0.9rem 1rem; margin-bottom: 0.75rem; }
+.slip-ded-section { background: #fff8f8; border-color: #fde8e8; }
+.slip-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #0f5241; margin-bottom: 0.6rem; display: flex; align-items: center; }
+.slip-section-title.ded-title { color: #c0392b; }
+
+/* Earnings input rows */
+.slip-input-row { display: flex; align-items: center; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #e8f4f0; gap: 12px; }
+.slip-input-row:last-of-type { border-bottom: none; }
+.slip-input-label { font-size: 0.83rem; color: #3a5a50; flex: 1; }
+.slip-input-wrap { display: flex; align-items: center; border: 1.5px solid #d4e5df; border-radius: 8px; overflow: hidden; background: white; }
+.slip-rupee { padding: 5px 8px; background: #eef7f4; color: #0f5241; font-size: 0.82rem; font-weight: 700; border-right: 1.5px solid #d4e5df; }
+.slip-amount-input { border: none; outline: none; padding: 5px 10px; font-size: 0.87rem; color: #0f2d22; width: 110px; text-align: right; background: white; }
+.slip-amount-input:focus { background: #f0faf7; }
+
+/* Subtotal rows */
+.slip-subtotal-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0 2px; margin-top: 6px; border-top: 1.5px solid #c8e5dc; font-size: 0.86rem; font-weight: 700; color: #0f5241; }
+.slip-subtotal-row.ded-subtotal { border-top-color: #f4b8b8; color: #c0392b; }
+
+/* Deduction rows */
+.slip-ded-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dashed #fde8e8; font-size: 0.83rem; color: #5a3a3a; }
+.slip-ded-row:last-of-type { border-bottom: none; }
+.slip-rate { color: #9ab8b0; font-size: 0.72rem; margin-left: 4px; }
+.ded-amount { font-weight: 600; color: #c0392b; white-space: nowrap; }
+.slip-na-badge { background: #e5e7eb; color: #6b7280; border-radius: 20px; padding: 1px 7px; font-size: 0.68rem; font-weight: 600; margin-left: 6px; }
+
+/* Net Pay */
+.slip-net-pay { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #0f5241, #145a4a); color: white; border-radius: 14px; padding: 14px 18px; margin-top: 4px; }
+.net-pay-label { font-size: 0.88rem; font-weight: 600; opacity: 0.92; }
+.net-pay-amount { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.5px; }
+
+/* Already-paid warning */
+.already-paid-warn { background: #fde8e8; border: 1.5px solid #f4b8b8; border-radius: 8px; padding: 6px 10px; font-size: 0.78rem; font-weight: 600; color: #c0392b; }

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
@@ -11,16 +11,21 @@ import { AuthService } from '../../../services/auth.service';
 export class ComplianceComponent implements OnInit {
 
   activeTab = 'All';
-  tabs       = ['All', 'COMPLIANT', 'PENDING', 'NON_COMPLIANT'];
-  tabLabels: Record<string, string> = { All: 'All', COMPLIANT: 'Compliant', PENDING: 'Pending', NON_COMPLIANT: 'Non-Compliant' };
+  tabs       = ['All', 'COMPLIANT', 'SUBMITTED', 'PENDING', 'NON_COMPLIANT'];
+  tabLabels: Record<string, string> = {
+    All: 'All', COMPLIANT: 'Compliant', SUBMITTED: 'Submitted',
+    PENDING: 'Pending', NON_COMPLIANT: 'Non-Compliant'
+  };
 
   formOpen  = false;
   isSaving  = false;
   formSaved = false;
   errorMsg  = '';
 
-  records: any[] = [];
-  isLoading = true;
+  records:       any[] = [];
+  hiredNurses:   any[] = [];
+  isLoading      = true;
+  nursesLoading  = false;
 
   complianceForm: FormGroup;
 
@@ -38,19 +43,20 @@ export class ComplianceComponent implements OnInit {
     private auth: AuthService
   ) {
     this.complianceForm = this.fb.group({
-      nurseFirstName:  ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30),
-                             Validators.pattern('^[A-Za-z]+$')]],
-      nurseMiddleName: ['', [Validators.maxLength(30), Validators.pattern('^[A-Za-z]*$')]],
-      nurseLastName:   ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30),
-                             Validators.pattern('^[A-Za-z.]+$')]],
-      requirement:     ['', Validators.required],
-      dueDate:         ['', Validators.required],
-      notes:           ['', Validators.maxLength(200)]
+      nurseUserId:  [null, Validators.required],
+      requirement:  ['', Validators.required],
+      dueDate:      ['', Validators.required],
+      notes:        ['', Validators.maxLength(200)]
     });
   }
 
   ngOnInit(): void {
     this.orgUserId = this.auth.getUserId()!;
+    this.nursesLoading = true;
+    this.adminService.getApprovedNurses(this.orgUserId).subscribe({
+      next: (data) => { this.hiredNurses = data || []; this.nursesLoading = false; },
+      error: ()     => { this.nursesLoading = false; }
+    });
     this.loadRecords();
   }
 
@@ -78,11 +84,12 @@ export class ComplianceComponent implements OnInit {
     this.isSaving = true;
     this.errorMsg = '';
     const v = this.complianceForm.value;
-    const nurseName = [v.nurseFirstName.trim(),
-                       v.nurseMiddleName?.trim() || '',
-                       v.nurseLastName.trim()]
-                      .filter(Boolean).join(' ');
-    const payload = { nurseName, requirement: v.requirement, dueDate: v.dueDate, notes: v.notes };
+    const payload = {
+      nurseUserId: Number(v.nurseUserId),
+      requirement: v.requirement,
+      dueDate:     v.dueDate,
+      notes:       v.notes
+    };
 
     this.adminService.createCompliance(this.orgUserId, payload).subscribe({
       next: (created) => {
@@ -119,11 +126,16 @@ export class ComplianceComponent implements OnInit {
     const s = (status ?? '').toUpperCase();
     return s === 'COMPLIANT'     ? 'badge-compliant'
          : s === 'NON_COMPLIANT' ? 'badge-noncompliant'
+         : s === 'SUBMITTED'     ? 'badge-submitted'
          : 'badge-pending';
   }
 
   isNonCompliant(status: string): boolean {
     return (status ?? '').toUpperCase() === 'NON_COMPLIANT';
+  }
+
+  isSubmitted(status: string): boolean {
+    return (status ?? '').toUpperCase() === 'SUBMITTED';
   }
 
   formatDate(d: string): string {

@@ -66,6 +66,8 @@ export class PaymentService {
     hra?: number;
     travelAllowance?: number;
     otherAllowances?: number;
+    professionalTax?: number;
+    paymentMethod?: string;
   }): Observable<any> {
     return this.http.post(`${this.API}/payments/org/${orgUserId}/salary`, payload)
       .pipe(map((r: any) => r.data), catchError(this.handleError));

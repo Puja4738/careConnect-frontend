@@ -195,12 +195,15 @@
 
             <!-- Join Date -->
             <div class="col-md-6">
-              <label class="field-label">Join Date *</label>
+              <label class="field-label">Join Date *
+                <span *ngIf="orgJoinDateMin" style="color:#9ab8b0;font-weight:400;">(from {{ orgJoinDateMin | date:'MMM yyyy' }})</span>
+              </label>
               <input type="date" class="field-input" formControlName="joinDate"
-                     [max]="today"
+                     [max]="today" [min]="orgJoinDateMin"
                      [class.input-err]="f['joinDate'].touched && f['joinDate'].invalid">
               <small class="err" *ngIf="f['joinDate'].touched && f['joinDate'].hasError('required')">Join date is required.</small>
               <small class="err" *ngIf="f['joinDate'].touched && f['joinDate'].hasError('futureDate')">Join date cannot be in the future.</small>
+              <small class="err" *ngIf="f['joinDate'].touched && f['joinDate'].hasError('beforeEstablishment')">Join date cannot be before the organisation was established ({{ orgJoinDateMin | date:'MMM yyyy' }}).</small>
             </div>
 
           </div>
@@ -234,6 +237,7 @@
                 <th>Experience</th>
                 <th>Hired On</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -252,6 +256,11 @@
                   <span class="status-dot dot-active">
                     <i class="bi bi-circle-fill me-1" style="font-size:0.45rem;"></i>Active
                   </span>
+                </td>
+                <td>
+                  <button class="btn-pay-salary" (click)="openPayModal(n)">
+                    <i class="bi bi-cash-coin me-1"></i>Pay Salary
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -496,5 +505,149 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PAY SALARY MODAL — Full Salary Slip
+     ══════════════════════════════════════════════════════════ -->
+<div class="pay-modal-backdrop" *ngIf="payNurse" (click)="closePayModal()"></div>
+<div class="pay-modal" *ngIf="payNurse">
+
+  <!-- Header -->
+  <div class="pay-modal-header">
+    <div>
+      <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Monthly Salary Slip</h5>
+      <small class="text-muted">
+        <i class="bi bi-person-fill me-1"></i>{{ payNurse.nurseName }}
+        <span class="ms-2 text-muted">{{ payNurse.nurseSpecialization || 'Nurse' }}</span>
+        <span *ngIf="payNurse.jobSalaryMin" class="ms-2" style="color:#0f5241;font-weight:600;">
+          Job range: ₹{{ payNurse.jobSalaryMin | number }} <ng-container *ngIf="payNurse.jobSalaryMax">– ₹{{ payNurse.jobSalaryMax | number }}</ng-container>
+        </span>
+      </small>
+    </div>
+    <button class="pay-modal-close" (click)="closePayModal()">&times;</button>
+  </div>
+
+  <div class="pay-modal-body">
+
+    <!-- Month + Payment Method -->
+    <div class="row g-3 mb-3">
+      <div class="col-md-7">
+        <label class="field-label">Salary Month *</label>
+        <input type="month" class="field-input" [(ngModel)]="payMonth"
+               [max]="today.slice(0,7)"
+               (change)="checkAlreadyPaid()">
+        <div *ngIf="alreadyPaidWarning" class="already-paid-warn mt-1">
+          <i class="bi bi-exclamation-circle-fill me-1"></i>{{ alreadyPaidWarning }}
+        </div>
+      </div>
+      <div class="col-md-5">
+        <label class="field-label">Payment Method</label>
+        <select class="field-input" [(ngModel)]="payMethod">
+          <option value="BANK_TRANSFER">Bank Transfer</option>
+          <option value="UPI">UPI</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- EARNINGS section -->
+    <div class="slip-section">
+      <div class="slip-section-title"><i class="bi bi-plus-circle-fill me-1"></i>Earnings</div>
+
+      <div class="slip-input-row">
+        <span class="slip-input-label">
+          Basic Salary *
+          <small *ngIf="payNurse?.jobSalaryMin" style="color:#9ab8b0;">(pre-filled from job)</small>
+        </span>
+        <div class="slip-input-wrap">
+          <span class="slip-rupee">₹</span>
+          <input type="number" class="slip-amount-input" [(ngModel)]="payBase" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="slip-input-row">
+        <span class="slip-input-label">HRA <small style="color:#9ab8b0;">(optional)</small></span>
+        <div class="slip-input-wrap">
+          <span class="slip-rupee">₹</span>
+          <input type="number" class="slip-amount-input" [(ngModel)]="payHRA" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="slip-input-row">
+        <span class="slip-input-label">Travel Allowance <small style="color:#9ab8b0;">(optional)</small></span>
+        <div class="slip-input-wrap">
+          <span class="slip-rupee">₹</span>
+          <input type="number" class="slip-amount-input" [(ngModel)]="payTravel" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="slip-input-row">
+        <span class="slip-input-label">Other Allowances <small style="color:#9ab8b0;">(optional)</small></span>
+        <div class="slip-input-wrap">
+          <span class="slip-rupee">₹</span>
+          <input type="number" class="slip-amount-input" [(ngModel)]="payOther" placeholder="0" min="0">
+        </div>
+      </div>
+
+      <div class="slip-subtotal-row">
+        <span>Gross Salary</span>
+        <span>₹ {{ slipGross | number }}</span>
+      </div>
+    </div>
+
+    <!-- DEDUCTIONS section -->
+    <div class="slip-section slip-ded-section" *ngIf="slipGross > 0">
+      <div class="slip-section-title ded-title"><i class="bi bi-dash-circle-fill me-1"></i>Deductions</div>
+
+      <div class="slip-ded-row">
+        <span>TDS / Income Tax <small class="slip-rate">(10% of Gross)</small></span>
+        <span class="ded-amount">– ₹ {{ slipTDS | number }}</span>
+      </div>
+
+      <div class="slip-ded-row">
+        <span>Provident Fund / PF <small class="slip-rate">(12% of Basic)</small></span>
+        <span class="ded-amount">– ₹ {{ slipPF | number }}</span>
+      </div>
+
+      <div class="slip-ded-row">
+        <span>
+          ESI <small class="slip-rate">(0.75% of Gross)</small>
+          <span class="slip-na-badge" *ngIf="slipESI === 0">N/A above ₹21,000</span>
+        </span>
+        <span class="ded-amount">– ₹ {{ slipESI | number }}</span>
+      </div>
+
+      <div class="slip-ded-row">
+        <span>Professional Tax <small class="slip-rate">(fixed ₹200)</small></span>
+        <span class="ded-amount">– ₹ {{ slipPT | number }}</span>
+      </div>
+
+      <div class="slip-subtotal-row ded-subtotal">
+        <span>Total Deductions</span>
+        <span>– ₹ {{ slipTotalDed | number }}</span>
+      </div>
+    </div>
+
+    <!-- NET PAY -->
+    <div class="slip-net-pay" *ngIf="slipGross > 0">
+      <div class="net-pay-label"><i class="bi bi-wallet2 me-2"></i>Net Pay (Take-Home)</div>
+      <div class="net-pay-amount">₹ {{ slipNetPay | number }}</div>
+    </div>
+
+    <div *ngIf="salaryError"   class="alert alert-danger py-2 small mt-3">{{ salaryError }}</div>
+    <div *ngIf="salarySuccess" class="alert alert-success py-2 small mt-3">
+      <i class="bi bi-check-circle-fill me-1"></i>{{ salarySuccess }}
+    </div>
+  </div>
+
+  <div class="pay-modal-footer">
+    <button class="btn-cancel-sm" (click)="closePayModal()" [disabled]="isSalaryProcessing">Cancel</button>
+    <button class="btn-save" (click)="processSalary()"
+            [disabled]="isSalaryProcessing || !payMonth || !payBase || slipNetPay <= 0 || !!alreadyPaidWarning">
+      <span *ngIf="isSalaryProcessing" class="spinner-border spinner-border-sm me-1"></span>
+      <i class="bi bi-send-fill me-1" *ngIf="!isSalaryProcessing"></i>
+      Process Salary
+    </button>
   </div>
 </div>

@@ -1,4 +1,4 @@
-﻿<div class="d-flex">
+<div class="d-flex">
 
   <!-- SIDEBAR -->
   <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
@@ -91,19 +91,19 @@
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-card text-center">
-          <div class="stat-num c-green">{{ countByStatus('Compliant') }}</div>
+          <div class="stat-num c-green">{{ countByStatus('COMPLIANT') }}</div>
           <div class="stat-lbl">Compliant</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-card text-center">
-          <div class="stat-num c-amber">{{ countByStatus('Pending') }}</div>
+          <div class="stat-num c-amber">{{ countByStatus('PENDING') }}</div>
           <div class="stat-lbl">Pending</div>
         </div>
       </div>
       <div class="col-6 col-md-3">
         <div class="stat-card text-center">
-          <div class="stat-num c-red">{{ countByStatus('Non-Compliant') }}</div>
+          <div class="stat-num c-red">{{ countByStatus('NON_COMPLIANT') }}</div>
           <div class="stat-lbl">Non-Compliant</div>
         </div>
       </div>
@@ -112,36 +112,25 @@
     <!-- ADD FORM -->
     <div class="form-panel mb-4" *ngIf="formOpen">
       <div class="form-panel-title"><i class="bi bi-plus-circle me-2"></i>Add Compliance Record</div>
+
+      <div *ngIf="hiredNurses.length === 0 && !nursesLoading" class="alert alert-warning mb-3" style="font-size:0.84rem;border-radius:10px;">
+        <i class="bi bi-exclamation-triangle me-1"></i>
+        No hired nurses found. Approve nurse applications first before adding compliance records.
+      </div>
+
       <form [formGroup]="complianceForm" (ngSubmit)="onSave()">
         <div class="row g-3">
-          <!-- First Name -->
-          <div class="col-md-4">
-            <label class="field-label">First Name *</label>
-            <input class="field-input" formControlName="nurseFirstName" placeholder="First name" maxlength="30"
-                   [class.input-err]="complianceForm.get('nurseFirstName')?.touched && complianceForm.get('nurseFirstName')?.invalid">
-            <small class="err" *ngIf="complianceForm.get('nurseFirstName')?.touched && complianceForm.get('nurseFirstName')?.hasError('required')">First name is required.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseFirstName')?.touched && complianceForm.get('nurseFirstName')?.hasError('minlength')">Minimum 3 letters required.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseFirstName')?.touched && complianceForm.get('nurseFirstName')?.hasError('maxlength')">First name must not exceed 30 characters.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseFirstName')?.touched && complianceForm.get('nurseFirstName')?.hasError('pattern')">Only letters allowed. No numbers or special characters.</small>
+          <!-- Nurse Dropdown -->
+          <div class="col-md-6">
+            <label class="field-label">Select Nurse *</label>
+            <select class="field-input" formControlName="nurseUserId"
+                    [class.input-err]="complianceForm.get('nurseUserId')?.touched && complianceForm.get('nurseUserId')?.invalid">
+              <option [ngValue]="null">-- Select hired nurse --</option>
+              <option *ngFor="let n of hiredNurses" [value]="n.nurseUserId">{{ n.nurseName }}</option>
+            </select>
+            <small class="err" *ngIf="complianceForm.get('nurseUserId')?.touched && complianceForm.get('nurseUserId')?.hasError('required')">Please select a nurse.</small>
           </div>
-          <!-- Middle Name -->
-          <div class="col-md-4">
-            <label class="field-label">Middle Name <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
-            <input class="field-input" formControlName="nurseMiddleName" placeholder="Middle name" maxlength="30"
-                   [class.input-err]="complianceForm.get('nurseMiddleName')?.touched && complianceForm.get('nurseMiddleName')?.invalid">
-            <small class="err" *ngIf="complianceForm.get('nurseMiddleName')?.touched && complianceForm.get('nurseMiddleName')?.hasError('maxlength')">Middle name must not exceed 30 characters.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseMiddleName')?.touched && complianceForm.get('nurseMiddleName')?.hasError('pattern')">Only letters allowed.</small>
-          </div>
-          <!-- Last Name -->
-          <div class="col-md-4">
-            <label class="field-label">Last Name *</label>
-            <input class="field-input" formControlName="nurseLastName" placeholder="Last name" maxlength="30"
-                   [class.input-err]="complianceForm.get('nurseLastName')?.touched && complianceForm.get('nurseLastName')?.invalid">
-            <small class="err" *ngIf="complianceForm.get('nurseLastName')?.touched && complianceForm.get('nurseLastName')?.hasError('required')">Last name is required.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseLastName')?.touched && complianceForm.get('nurseLastName')?.hasError('minlength')">Minimum 3 letters required.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseLastName')?.touched && complianceForm.get('nurseLastName')?.hasError('maxlength')">Last name must not exceed 30 characters.</small>
-            <small class="err" *ngIf="complianceForm.get('nurseLastName')?.touched && complianceForm.get('nurseLastName')?.hasError('pattern')">Only letters and dot allowed. No numbers.</small>
-          </div>
+          <!-- Requirement -->
           <div class="col-md-6">
             <label class="field-label">Requirement *</label>
             <select class="field-input" formControlName="requirement"
@@ -151,32 +140,25 @@
             </select>
             <small class="err" *ngIf="complianceForm.get('requirement')?.touched && complianceForm.get('requirement')?.hasError('required')">Required.</small>
           </div>
+          <!-- Due Date -->
           <div class="col-md-4">
             <label class="field-label">Due Date *</label>
             <input type="date" class="field-input" formControlName="dueDate"
                    [class.input-err]="complianceForm.get('dueDate')?.touched && complianceForm.get('dueDate')?.invalid">
             <small class="err" *ngIf="complianceForm.get('dueDate')?.touched && complianceForm.get('dueDate')?.hasError('required')">Required.</small>
           </div>
+          <!-- Notes -->
           <div class="col-12">
-            <label class="field-label">
-              <span *ngIf="complianceForm.get('status')?.value === 'NON_COMPLIANT'">
-                <i class="bi bi-exclamation-triangle-fill me-1 text-danger"></i>Corrective Action Plan (CAP) *
-              </span>
-              <span *ngIf="complianceForm.get('status')?.value !== 'NON_COMPLIANT'">
-                Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span>
-              </span>
-            </label>
+            <label class="field-label">Notes <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
             <textarea class="field-input" formControlName="notes" rows="2"
-                      [placeholder]="complianceForm.get('status')?.value === 'NON_COMPLIANT'
-                        ? 'Describe corrective actions required, responsible person, and timeline…'
-                        : 'Optional notes…'"
+                      placeholder="Optional notes or instructions for the nurse…"
                       maxlength="200"
                       [class.input-err]="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.invalid"></textarea>
             <small class="err" *ngIf="complianceForm.get('notes')?.touched && complianceForm.get('notes')?.hasError('maxlength')">Notes must not exceed 200 characters.</small>
           </div>
         </div>
         <div class="d-flex gap-2 mt-3">
-          <button type="submit" class="btn-save" [disabled]="isSaving">
+          <button type="submit" class="btn-save" [disabled]="isSaving || hiredNurses.length === 0">
             <span *ngIf="!isSaving">Save</span>
             <span *ngIf="isSaving">Saving…</span>
           </button>
@@ -200,8 +182,13 @@
     <div *ngFor="let rec of filteredRecords" class="record-card mb-3">
       <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div class="d-flex align-items-start gap-3">
-          <div class="rec-icon" [class.rec-icon-red]="isNonCompliant(rec.status)">
-            <i class="bi" [ngClass]="isNonCompliant(rec.status) ? 'bi-exclamation-triangle-fill' : 'bi-shield-check'"></i>
+          <div class="rec-icon"
+               [class.rec-icon-red]="isNonCompliant(rec.status)"
+               [class.rec-icon-blue]="isSubmitted(rec.status)">
+            <i class="bi"
+               [ngClass]="isNonCompliant(rec.status) ? 'bi-exclamation-triangle-fill'
+                        : isSubmitted(rec.status)    ? 'bi-upload'
+                        : 'bi-shield-check'"></i>
           </div>
           <div>
             <p class="rec-nurse">{{ rec.nurseName }}</p>
@@ -220,6 +207,21 @@
             <p class="rec-meta" *ngIf="!isNonCompliant(rec.status) && rec.notes">
               <i class="bi bi-chat-text me-1"></i>{{ rec.notes }}
             </p>
+            <!-- Submitted note + document from nurse -->
+            <div *ngIf="isSubmitted(rec.status)" class="submitted-note mt-2">
+              <div *ngIf="rec.submittedNote">
+                <i class="bi bi-file-earmark-text me-1"></i>
+                <strong>Nurse note:</strong> {{ rec.submittedNote }}
+                <span *ngIf="rec.submittedAt" class="text-muted ms-2" style="font-size:0.72rem;">{{ formatDate(rec.submittedAt) }}</span>
+              </div>
+              <a *ngIf="rec.documentUrl" [href]="'http://localhost:8080/api/files/' + rec.documentUrl"
+                 target="_blank" class="doc-link mt-1 d-inline-flex align-items-center">
+                <i class="bi bi-file-earmark-arrow-down me-1"></i>View submitted document
+              </a>
+              <span *ngIf="!rec.documentUrl && !rec.submittedNote" style="color:#6a8c80;font-size:0.8rem;">
+                <i class="bi bi-upload me-1"></i>Nurse submitted — no document attached
+              </span>
+            </div>
           </div>
         </div>
         <div class="d-flex flex-column align-items-end gap-2">

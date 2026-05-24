@@ -1,0 +1,191 @@
+<div class="d-flex">
+  <!-- SIDEBAR -->
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand"><i class="bi bi-heart-pulse-fill"></i><span>CareConnect</span></div>
+    <ul class="nav flex-column">
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-dashboard" routerLinkActive="active"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-profile" routerLinkActive="active"><i class="bi bi-person-badge"></i> My Profile</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-available-jobs" routerLinkActive="active"><i class="bi bi-briefcase"></i> Jobs</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-applications" routerLinkActive="active"><i class="bi bi-journal-bookmark-fill"></i> Applications</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-my-patients" routerLinkActive="active"><i class="bi bi-people-fill"></i> My Patients</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-schedule" routerLinkActive="active"><i class="bi bi-calendar3"></i> Schedule</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-payments" routerLinkActive="active"><i class="bi bi-cash-stack"></i> Payments</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-training" routerLinkActive="active"><i class="bi bi-mortarboard"></i> Training</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-telehealth" routerLinkActive="active"><i class="bi bi-camera-video-fill"></i> Telehealth</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-compliance" routerLinkActive="active"><i class="bi bi-shield-check"></i> Compliance</a></li>
+      <li class="nav-item mb-1"><a class="nav-link-custom" routerLink="/nurse-notifications" routerLinkActive="active"><i class="bi bi-bell-fill"></i> Notifications<span *ngIf="unreadCount>0" style="background:#ef4444;color:white;border-radius:20px;font-size:.65rem;font-weight:700;padding:1px 7px;margin-left:auto;">{{unreadCount}}</span></a></li>
+      <div class="sidebar-divider mt-auto"></div>
+      <li class="nav-item"><a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+    </ul>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content p-4 w-100">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+      <div>
+        <h4 class="page-title">My Compliance</h4>
+        <p class="page-subtitle">View requirements assigned to you and submit your documents</p>
+      </div>
+      <button class="btn-refresh" (click)="loadRecords()">
+        <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+      </button>
+    </div>
+
+    <!-- STATS -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-num">{{ records.length }}</div>
+          <div class="stat-lbl">Total</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-num c-amber">{{ countByStatus('PENDING') }}</div>
+          <div class="stat-lbl">Pending</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-num c-blue">{{ countByStatus('SUBMITTED') }}</div>
+          <div class="stat-lbl">Submitted</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card text-center">
+          <div class="stat-num c-green">{{ countByStatus('COMPLIANT') }}</div>
+          <div class="stat-lbl">Compliant</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-row mb-4">
+      <button class="tab-btn" *ngFor="let tab of tabs"
+              [class.tab-active]="activeTab === tab"
+              (click)="activeTab = tab">
+        {{ tabLabels[tab] }}
+        <span class="tab-count" *ngIf="tab !== 'All'">{{ countByStatus(tab) }}</span>
+      </button>
+    </div>
+
+    <!-- LOADING -->
+    <div *ngIf="isLoading" class="text-center py-5 text-muted">
+      <div class="spinner-border text-success" role="status"></div>
+      <p class="mt-2">Loading requirements…</p>
+    </div>
+
+    <!-- RECORDS -->
+    <div *ngIf="!isLoading">
+      <div *ngFor="let rec of filteredRecords" class="record-card mb-3">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+          <div class="d-flex align-items-start gap-3">
+            <div class="rec-icon"
+                 [class.rec-icon-red]="rec.status === 'NON_COMPLIANT'"
+                 [class.rec-icon-blue]="rec.status === 'SUBMITTED'"
+                 [class.rec-icon-green]="rec.status === 'COMPLIANT'">
+              <i class="bi"
+                 [ngClass]="rec.status === 'NON_COMPLIANT' ? 'bi-exclamation-triangle-fill'
+                          : rec.status === 'SUBMITTED'    ? 'bi-upload'
+                          : rec.status === 'COMPLIANT'    ? 'bi-check-circle-fill'
+                          : 'bi-shield-check'"></i>
+            </div>
+            <div>
+              <p class="rec-req">{{ rec.requirement }}</p>
+              <p class="rec-org" *ngIf="rec.organisationId">Organisation requirement</p>
+              <p class="rec-meta">
+                <i class="bi bi-calendar3 me-1"></i>Due: <strong [class.text-danger]="isOverdue(rec.dueDate) && rec.status !== 'COMPLIANT' && rec.status !== 'SUBMITTED'">{{ rec.dueDate }}</strong>
+                <span *ngIf="isOverdue(rec.dueDate) && rec.status !== 'COMPLIANT' && rec.status !== 'SUBMITTED'" class="ms-2" style="color:#c0392b;font-size:0.72rem;font-weight:700;">OVERDUE</span>
+              </p>
+              <p class="rec-meta" *ngIf="rec.notes">
+                <i class="bi bi-chat-text me-1"></i>{{ rec.notes }}
+              </p>
+              <!-- Already submitted info -->
+              <div *ngIf="rec.status === 'SUBMITTED'" class="submitted-info mt-2">
+                <i class="bi bi-check2-circle me-1"></i>
+                Documents submitted on {{ formatDate(rec.submittedAt) }}
+                <span *ngIf="rec.submittedNote" class="d-block mt-1 text-muted" style="font-size:0.77rem;">
+                  "{{ rec.submittedNote }}"
+                </span>
+                <a *ngIf="rec.documentUrl" [href]="'http://localhost:8080/api/files/' + rec.documentUrl"
+                   target="_blank" class="doc-link d-block mt-1">
+                  <i class="bi bi-file-earmark-arrow-down me-1"></i>View submitted document
+                </a>
+              </div>
+              <!-- Compliant badge message -->
+              <div *ngIf="rec.status === 'COMPLIANT'" class="compliant-info mt-2">
+                <i class="bi bi-patch-check-fill me-1"></i> Marked as compliant by your organisation.
+              </div>
+            </div>
+          </div>
+          <div class="d-flex flex-column align-items-end gap-2">
+            <span class="status-badge" [ngClass]="getStatusClass(rec.status)">{{ rec.status }}</span>
+            <button class="btn-submit" *ngIf="canSubmit(rec)" (click)="openSubmit(rec)">
+              <i class="bi bi-upload me-1"></i>Submit Documents
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredRecords.length === 0" class="empty-state">
+        <i class="bi bi-shield fs-2 d-block mb-2"></i>
+        <span *ngIf="activeTab === 'All'">No compliance requirements assigned to you yet.</span>
+        <span *ngIf="activeTab !== 'All'">No {{ tabLabels[activeTab] | lowercase }} requirements.</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-backdrop" *ngIf="submitting" (click)="closeSubmit()"></div>
+<div class="submit-modal" *ngIf="submitting">
+  <div class="modal-header">
+    <div>
+      <h5>Submit Documents</h5>
+      <p class="modal-subtitle">{{ submitting.requirement }}</p>
+    </div>
+    <button class="modal-close" (click)="closeSubmit()">&times;</button>
+  </div>
+  <div class="modal-body">
+    <div *ngIf="submitSuccess" class="toast-success mb-3">
+      <i class="bi bi-check-circle-fill me-2"></i>{{ submitSuccess }}
+    </div>
+    <div *ngIf="submitError" class="toast-error mb-3">
+      <i class="bi bi-exclamation-circle me-2"></i>{{ submitError }}
+    </div>
+    <!-- File upload -->
+    <label class="field-label">Upload Document <span style="color:#9ab8b0;font-weight:400;">(optional — PDF, JPG, PNG, DOCX)</span></label>
+    <div class="file-drop-area" *ngIf="!submitFileName" (click)="fileInput.click()">
+      <i class="bi bi-cloud-upload fs-4 d-block mb-1" style="color:#0f5241;"></i>
+      <span style="font-size:0.83rem;color:#4e6e68;">Click to browse or drag &amp; drop</span>
+    </div>
+    <div class="file-selected" *ngIf="submitFileName">
+      <i class="bi bi-file-earmark-check me-2" style="color:#0f5241;"></i>
+      <span>{{ submitFileName }}</span>
+      <button class="file-remove" (click)="removeFile()" type="button">&times;</button>
+    </div>
+    <input #fileInput type="file" style="display:none"
+           accept=".pdf,.jpg,.jpeg,.png,.docx,.doc"
+           (change)="onFileChange($event)">
+
+    <!-- Note -->
+    <label class="field-label mt-3">Add a note <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
+    <textarea class="field-input" [(ngModel)]="submitNote" rows="2"
+              placeholder="Reference numbers, document details, or any relevant notes…"
+              maxlength="500"></textarea>
+    <p style="font-size:0.75rem;color:#9ab8b0;margin-top:4px;">
+      <i class="bi bi-info-circle me-1"></i>
+      This will notify your organisation. They will review and mark you as compliant.
+    </p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-cancel-sm" (click)="closeSubmit()">Cancel</button>
+    <button class="btn-submit-confirm" (click)="onSubmit()" [disabled]="isSubmitting">
+      <span *ngIf="!isSubmitting"><i class="bi bi-upload me-1"></i>Submit</span>
+      <span *ngIf="isSubmitting">Submitting…</span>
+    </button>
+  </div>
+</div>

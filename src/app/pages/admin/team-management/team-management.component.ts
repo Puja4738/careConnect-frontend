@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 import { AdminService } from '../../../services/admin.service';
 import { AuthService } from '../../../services/auth.service';
 import { TrainingService } from '../../../services/training.service';
+import { PaymentService } from '../../../services/payment.service';
 
 @Component({
   selector: 'app-team-management',
@@ -97,18 +98,44 @@ export class TeamManagementComponent implements OnInit {
     return this.addMode === 'doctor' ? this.DOCTOR_QUALIFICATIONS : this.STAFF_QUALIFICATIONS;
   }
 
-  // Today's date string for join date max
+  // Today's date string for join date max, and org establishment min
   readonly today = new Date().toISOString().split('T')[0];
+  orgJoinDateMin = '';   // set after org profile loads: 'YYYY-MM-01'
+
+  // Pay Salary modal
+  payNurse:            any    = null;
+  payMonth             = '';
+  payBase              = '';
+  payHRA               = '';
+  payTravel            = '';
+  payOther             = '';
+  payMethod            = 'BANK_TRANSFER';
+  isSalaryProcessing   = false;
+  salaryError          = '';
+  salarySuccess        = '';
+  alreadyPaidWarning   = '';
+
+  // "nurseId-MonthLabel" → already paid this month
+  paidMonths = new Set<string>();
+
+  // Salary slip live calculations
+  get slipGross():    number { return (+this.payBase||0) + (+this.payHRA||0) + (+this.payTravel||0) + (+this.payOther||0); }
+  get slipTDS():      number { return Math.round(this.slipGross * 0.10); }
+  get slipPF():       number { return Math.round((+this.payBase||0) * 0.12); }
+  get slipESI():      number { return this.slipGross <= 21000 ? Math.round(this.slipGross * 0.0075) : 0; }
+  get slipPT():       number { return 200; }
+  get slipTotalDed(): number { return this.slipTDS + this.slipPF + this.slipESI + this.slipPT; }
+  get slipNetPay():   number { return this.slipGross - this.slipTotalDed; }
 
   readonly COUNTRY_CODES = [
-    { label: '🇮🇳 +91 India',     code: '+91'  },
-    { label: '🇺🇸 +1  USA/Canada', code: '+1'   },
-    { label: '🇬🇧 +44 UK',         code: '+44'  },
-    { label: '🇦🇺 +61 Australia',  code: '+61'  },
-    { label: '🇦🇪 +971 UAE',       code: '+971' },
-    { label: '🇸🇬 +65 Singapore',  code: '+65'  },
-    { label: '🇩🇪 +49 Germany',    code: '+49'  },
-    { label: '🇫🇷 +33 France',     code: '+33'  },
+    { label: '+91  India',      code: '+91'  },
+    { label: '+1   USA/Canada', code: '+1'   },
+    { label: '+44  UK',         code: '+44'  },
+    { label: '+61  Australia',  code: '+61'  },
+    { label: '+971 UAE',        code: '+971' },
+    { label: '+65  Singapore',  code: '+65'  },
+    { label: '+49  Germany',    code: '+49'  },
+    { label: '+33  France',     code: '+33'  },
   ];
 
   // ── Mandatory Training Management ─────────────────────────────────────────
@@ -149,7 +176,8 @@ export class TeamManagementComponent implements OnInit {
     private fb: FormBuilder,
     private adminService: AdminService,
     private auth: AuthService,
-    private trainingSvc: TrainingService
+    private trainingSvc: TrainingService,
+    private paymentSvc: PaymentService
   ) {
     this.memberForm = this.fb.group({
       firstName:       ['', [Validators.required, Validators.minLength(3), Validators.maxLength(30),
@@ -167,7 +195,9 @@ export class TeamManagementComponent implements OnInit {
       phone:           ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
       joinDate:        ['', [Validators.required, (c: AbstractControl) => {
         if (!c.value) return null;
-        return c.value > new Date().toISOString().split('T')[0] ? { futureDate: true } : null;
+        if (c.value > new Date().toISOString().split('T')[0]) return { futureDate: true };
+        if (this.orgJoinDateMin && c.value < this.orgJoinDateMin) return { beforeEstablishment: true };
+        return null;
       }]]
     });
   }
@@ -182,23 +212,41 @@ export class TeamManagementComponent implements OnInit {
       mandatory:    [true]
     });
     this.loadAll();
+
+    // Load org establishment date to set joinDate minimum
+    this.adminService.getOrgProfile(this.orgUserId).subscribe({
+      next: (data) => {
+        if (data?.establishedYear && data?.establishedMonth) {
+          const m = String(data.establishedMonth).padStart(2, '0');
+          this.orgJoinDateMin = `${data.establishedYear}-${m}-01`;
+        }
+      }
+    });
   }
 
   loadAll(): void {
     this.isLoading = true;
     forkJoin({
-      nurses:  this.adminService.getApprovedNurses(this.orgUserId),
-      team:    this.adminService.getTeamMembers(this.orgUserId),
-      courses: this.trainingSvc.getOrgCourses(this.orgUserId)
+      nurses:   this.adminService.getApprovedNurses(this.orgUserId),
+      team:     this.adminService.getTeamMembers(this.orgUserId),
+      courses:  this.trainingSvc.getOrgCourses(this.orgUserId),
+      salaries: this.paymentSvc.getOrgSalaryHistory(this.orgUserId)
     }).subscribe({
-      next: ({ nurses, team, courses }) => {
+      next: ({ nurses, team, courses, salaries }) => {
         this.approvedNurses = nurses  || [];
         this.teamMembers    = team    || [];
         this.orgCourses     = courses || [];
+        this.buildPaidMonths(salaries || []);
         this.isLoading = false;
       },
       error: () => { this.isLoading = false; }
     });
+  }
+
+  private buildPaidMonths(salaries: any[]): void {
+    this.paidMonths = new Set(
+      salaries.map(s => `${s.nurseId}-${s.salaryMonth}`)
+    );
   }
 
   onCourseSelect(): void {
@@ -289,5 +337,77 @@ export class TeamManagementComponent implements OnInit {
     if (!name) return '?';
     return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
   }
+
+  // ── Pay Salary ────────────────────────────────────────────────────────────
+
+  openPayModal(nurse: any): void {
+    this.payNurse            = nurse;
+    this.payMonth            = '';
+    this.payBase             = nurse.jobSalaryMin ? String(nurse.jobSalaryMin) : '';
+    this.payHRA              = '';
+    this.payTravel           = '';
+    this.payOther            = '';
+    this.payMethod           = 'BANK_TRANSFER';
+    this.salaryError         = '';
+    this.salarySuccess       = '';
+    this.alreadyPaidWarning  = '';
+    this.isSalaryProcessing  = false;
+  }
+
+  closePayModal(): void { this.payNurse = null; }
+
+  private monthLabel(yyyyMM: string): string {
+    return new Date(yyyyMM + '-01')
+      .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+  }
+
+  checkAlreadyPaid(): void {
+    this.alreadyPaidWarning = '';
+    if (!this.payMonth || !this.payNurse) return;
+    const key = `${this.payNurse.nurseId}-${this.monthLabel(this.payMonth)}`;
+    if (this.paidMonths.has(key)) {
+      this.alreadyPaidWarning =
+        `${this.payNurse.nurseName} has already been paid for ${this.monthLabel(this.payMonth)}. Duplicate payment is not allowed.`;
+    }
+  }
+
+  processSalary(): void {
+    if (!this.payMonth || !this.payBase) {
+      this.salaryError = 'Month and base salary are required.'; return;
+    }
+    if (this.slipNetPay <= 0) {
+      this.salaryError = 'Net pay is zero or negative. Please review the salary inputs.'; return;
+    }
+    this.isSalaryProcessing = true;
+    this.salaryError        = '';
+
+    // Format "YYYY-MM" → "May 2026"
+    const monthLabel = new Date(this.payMonth + '-01')
+      .toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+    this.paymentSvc.processMonthlySalary(this.orgUserId, {
+      nurseUserId:      this.payNurse.nurseUserId,
+      salaryMonth:      monthLabel,
+      baseSalary:       +this.payBase,
+      hra:              this.payHRA    ? +this.payHRA    : undefined,
+      travelAllowance:  this.payTravel ? +this.payTravel : undefined,
+      otherAllowances:  this.payOther  ? +this.payOther  : undefined,
+      professionalTax:  this.slipPT,
+      paymentMethod:    this.payMethod,
+    }).subscribe({
+      next: () => {
+        // Mark this month as paid immediately so re-opening blocks it
+        this.paidMonths.add(`${this.payNurse.nurseId}-${monthLabel}`);
+        this.isSalaryProcessing = false;
+        this.salarySuccess = `Salary of ₹${this.slipNetPay.toLocaleString('en-IN')} processed for ${this.payNurse.nurseName}!`;
+        setTimeout(() => this.closePayModal(), 2500);
+      },
+      error: (err: Error) => {
+        this.salaryError        = err.message;
+        this.isSalaryProcessing = false;
+      }
+    });
+  }
+
   logout(): void { this.auth.logout(); }
 }

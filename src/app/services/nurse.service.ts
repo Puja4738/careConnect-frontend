@@ -56,6 +56,21 @@ export class NurseService {
       .pipe(map((r: any) => r.data), catchError(this.handleError));
   }
 
+  // ── Compliance ───────────────────────────────────────────────────
+  getMyCompliance(nurseUserId: number): Observable<any[]> {
+    return this.http.get<any>(`${API}/compliance/nurse/${nurseUserId}`)
+      .pipe(map((r: any) => r.data || []), catchError(() => []));
+  }
+
+  submitCompliance(recordId: number, nurseUserId: number, note: string, document?: File): Observable<any> {
+    const fd = new FormData();
+    fd.append('nurseUserId', String(nurseUserId));
+    if (note) fd.append('note', note);
+    if (document) fd.append('document', document);
+    return this.http.post<any>(`${API}/compliance/${recordId}/submit`, fd)
+      .pipe(map((r: any) => r.data), catchError(this.handleError));
+  }
+
   private handleError(err: HttpErrorResponse): Observable<never> {
     const msg = err.error?.message ?? 'Something went wrong. Please try again.';
     return throwError(() => new Error(msg));

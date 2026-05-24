@@ -31,15 +31,26 @@ export class AdminDashboardComponent implements OnInit {
     'HR Manager', 'Operations Manager', 'Deputy Administrator', 'Other'
   ];
 
+  readonly currentYear = new Date().getFullYear();
+
+  readonly MONTHS = [
+    { value: '1',  label: 'January' },  { value: '2',  label: 'February' },
+    { value: '3',  label: 'March' },    { value: '4',  label: 'April' },
+    { value: '5',  label: 'May' },      { value: '6',  label: 'June' },
+    { value: '7',  label: 'July' },     { value: '8',  label: 'August' },
+    { value: '9',  label: 'September' },{ value: '10', label: 'October' },
+    { value: '11', label: 'November' }, { value: '12', label: 'December' },
+  ];
+
   readonly COUNTRY_CODES = [
-    { label: 'IN +91',  code: '+91'  },
-    { label: 'US +1',   code: '+1'   },
-    { label: 'UK +44',  code: '+44'  },
-    { label: 'AU +61',  code: '+61'  },
-    { label: 'AE +971', code: '+971' },
-    { label: 'SG +65',  code: '+65'  },
-    { label: 'DE +49',  code: '+49'  },
-    { label: 'CA +1',   code: '+1'   },
+    { label: '+91  India',      code: '+91'  },
+    { label: '+1   USA/Canada', code: '+1'   },
+    { label: '+44  UK',         code: '+44'  },
+    { label: '+61  Australia',  code: '+61'  },
+    { label: '+971 UAE',        code: '+971' },
+    { label: '+65  Singapore',  code: '+65'  },
+    { label: '+49  Germany',    code: '+49'  },
+    { label: '+1   Canada',     code: '+1'   },
   ];
 
   readonly SPECIALIZATION_OPTIONS = [
@@ -97,11 +108,13 @@ export class AdminDashboardComponent implements OnInit {
           contact2Email:       data.contact2Email       || '',
           contact2Phone:       data.contact2Phone       || '',
           contact2Designation: data.contact2Designation || '',
-          verifiedByAdmin: !!data.verifiedByAdmin,
-          status:          'Active',
-          accreditation:   data.accreditation || '—',
-          established:     data.createdAt ? new Date(data.createdAt).getFullYear().toString() : '—',
-          bedCapacity:     data.bedCapacity  || '—',
+          verifiedByAdmin:  !!data.verifiedByAdmin,
+          status:           'Active',
+          accreditation:    data.accreditation || '—',
+          established:      data.establishedYear ? String(data.establishedYear) : '—',
+          establishedYear:  data.establishedYear  || null,
+          establishedMonth: data.establishedMonth || null,
+          bedCapacity:      data.bedCapacity  || '—',
           specializations: data.specializations
                              ? data.specializations.split(',').map((s: string) => s.trim()).filter((s: string) => s)
                              : []
@@ -183,9 +196,12 @@ export class AdminDashboardComponent implements OnInit {
       contactPerson: [{ value: this.org.contactPerson, disabled: true }],
       designation:   [{ value: this.org.designation,   disabled: true }],
       phone:         [{ value: this.org.phone,          disabled: true }],
-      website:       [v('website'), [Validators.pattern('^(https?://)?(www\\.)?[a-zA-Z0-9][a-zA-Z0-9\\-]+(\\.(com|in|org|gov\\.in))(/[^\\s]*)?$')]],
-      bedCapacity:   [v('bedCapacity'),  [Validators.min(1), Validators.max(10000)]],
-      accreditation: [v('accreditation')],
+      website:          [v('website'), [Validators.pattern('^(https?://)?(www\\.)?[a-zA-Z0-9][a-zA-Z0-9\\-]+(\\.(com|in|org|gov\\.in))(/[^\\s]*)?$')]],
+      bedCapacity:      [v('bedCapacity'),  [Validators.min(1), Validators.max(10000)]],
+      accreditation:    [v('accreditation')],
+      establishedMonth: [this.org.establishedMonth ? String(this.org.establishedMonth) : ''],
+      establishedYear:  [this.org.establishedYear  ? String(this.org.establishedYear)  : '',
+                         [Validators.min(1900), Validators.max(this.currentYear)]],
 
       // ── Second Contact (all optional) ──
       c2FirstName:   [this.org.contact2FirstName,
@@ -279,6 +295,8 @@ export class AdminDashboardComponent implements OnInit {
       website:             raw.website       || '',
       bedCapacity:         raw.bedCapacity   ? Number(raw.bedCapacity) : null,
       accreditation:       raw.accreditation || '',
+      establishedYear:     raw.establishedYear  ? Number(raw.establishedYear)  : null,
+      establishedMonth:    raw.establishedMonth ? Number(raw.establishedMonth) : null,
       specializations:     Array.from(this.selectedSpecs).join(','),
       contact2FirstName:   raw.c2FirstName   || '',
       contact2MiddleName:  raw.c2MiddleName  || '',
@@ -298,6 +316,9 @@ export class AdminDashboardComponent implements OnInit {
           website:             raw.website      || '—',
           bedCapacity:         raw.bedCapacity  || '—',
           accreditation:       raw.accreditation || '—',
+          established:         raw.establishedYear ? String(raw.establishedYear) : '—',
+          establishedYear:     raw.establishedYear  ? Number(raw.establishedYear)  : null,
+          establishedMonth:    raw.establishedMonth ? Number(raw.establishedMonth) : null,
           specializations:     Array.from(this.selectedSpecs),
           contact2FirstName:   raw.c2FirstName   || '',
           contact2MiddleName:  raw.c2MiddleName  || '',

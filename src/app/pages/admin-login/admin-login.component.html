@@ -1,89 +1,102 @@
 <div class="admin-login-page">
 
-  <!-- Back to Home -->
+  <!-- Full-page background image -->
+  <img src="assets/admin-login-bg.jpeg" alt="" class="hero-bg">
+  <div class="hero-overlay"></div>
+
+  <!-- Back to Home — top right -->
   <button class="back-btn" (click)="goHome()">
     <i class="bi bi-arrow-left me-1"></i> Back to Home
   </button>
 
-  <div class="login-card">
-
-    <!-- Logo / Badge -->
-    <div class="admin-badge">
+  <!-- Top-left branding -->
+  <div class="hero-content">
+    <div class="hero-brand">
       <i class="bi bi-shield-lock-fill"></i>
+      CareConnect Admin
     </div>
+    <h1 class="hero-headline">Platform<br>Admin Portal</h1>
+    <p class="hero-sub">Restricted access — Authorized<br>administrators only.</p>
+    <div class="hero-chips">
+      <span class="hero-chip"><i class="bi bi-shield-check"></i> Secured Access</span>
+      <span class="hero-chip"><i class="bi bi-activity"></i> Audit Logged</span>
+      <span class="hero-chip"><i class="bi bi-person-badge"></i> Role Protected</span>
+    </div>
+  </div>
 
-    <h2 class="login-title">Platform Admin Portal</h2>
-    <p class="login-sub">Restricted access — Authorized administrators only</p>
+  <!-- Login card — floating right -->
+  <div class="form-panel">
+    <div class="login-card">
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
-
-      <!-- Username -->
-      <div class="field-group">
-        <label class="field-label">
-          <i class="bi bi-person-fill me-1"></i>Username
-        </label>
-        <input
-          class="field-input"
-          formControlName="username"
-          type="text"
-          readonly
-          style="cursor:default;opacity:0.8;user-select:none;"
-          autocomplete="off">
-        <small class="err" *ngIf="f['username'].touched && f['username'].hasError('required')">
-          Username is required.
-        </small>
-        <small class="err" *ngIf="f['username'].touched && f['username'].hasError('minlength')">
-          Username must be at least 3 characters.
-        </small>
+      <div class="admin-badge">
+        <i class="bi bi-shield-lock-fill"></i>
       </div>
 
-      <!-- Password -->
-      <div class="field-group">
-        <label class="field-label">
-          <i class="bi bi-lock-fill me-1"></i>Password
-        </label>
-        <div class="pwd-wrap">
+      <h2 class="login-title">Admin Sign In</h2>
+      <p class="login-sub">Authorized administrators only</p>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
+
+        <!-- Username -->
+        <div class="field-group">
+          <label class="field-label">
+            <i class="bi bi-person-fill me-1"></i>Username
+          </label>
           <input
             class="field-input"
-            [class.input-err]="f['password'].touched && f['password'].invalid"
-            formControlName="password"
-            [type]="showPwd ? 'text' : 'password'"
-            placeholder="Enter admin password"
-            autocomplete="new-password">
-          <button type="button" class="pwd-eye" (click)="showPwd = !showPwd" tabindex="-1">
-            <i class="bi" [class.bi-eye]="!showPwd" [class.bi-eye-slash]="showPwd"></i>
-          </button>
+            formControlName="username"
+            type="text"
+            readonly
+            style="cursor:default;opacity:0.8;user-select:none;"
+            autocomplete="off">
+          <small class="err" *ngIf="f['username'].touched && f['username'].hasError('required')">Username is required.</small>
+          <small class="err" *ngIf="f['username'].touched && f['username'].hasError('minlength')">Username must be at least 3 characters.</small>
         </div>
-        <small class="err" *ngIf="f['password'].touched && f['password'].hasError('required')">
-          Password is required.
-        </small>
-        <small class="err" *ngIf="f['password'].touched && f['password'].hasError('minlength')">
-          Password must be at least 6 characters.
-        </small>
-      </div>
 
-      <!-- Error Message -->
-      <div class="error-banner" *ngIf="errorMsg">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMsg }}
-      </div>
+        <!-- Password -->
+        <div class="field-group">
+          <label class="field-label">
+            <i class="bi bi-lock-fill me-1"></i>Password
+          </label>
+          <div class="pwd-wrap">
+            <input
+              class="field-input"
+              [class.input-err]="f['password'].touched && f['password'].invalid"
+              formControlName="password"
+              [type]="showPwd ? 'text' : 'password'"
+              placeholder="Enter admin password"
+              autocomplete="new-password">
+            <button type="button" class="pwd-eye" (click)="showPwd = !showPwd" tabindex="-1">
+              <i class="bi" [class.bi-eye]="!showPwd" [class.bi-eye-slash]="showPwd"></i>
+            </button>
+          </div>
+          <small class="err" *ngIf="f['password'].touched && f['password'].hasError('required')">Password is required.</small>
+          <small class="err" *ngIf="f['password'].touched && f['password'].hasError('minlength')">Password must be at least 6 characters.</small>
+        </div>
 
-      <!-- Submit -->
-      <button type="submit" class="btn-login" [disabled]="isLoading">
-        <span *ngIf="!isLoading">
-          <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Admin Portal
-        </span>
-        <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
-          <span class="spin"></span>Authenticating…
-        </span>
-      </button>
+        <!-- Error Message -->
+        <div class="error-banner" *ngIf="errorMsg">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ errorMsg }}
+        </div>
 
-    </form>
+        <!-- Submit -->
+        <button type="submit" class="btn-login" [disabled]="isLoading">
+          <span *ngIf="!isLoading">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In to Admin Portal
+          </span>
+          <span *ngIf="isLoading" class="d-flex align-items-center justify-content-center gap-2">
+            <span class="spin"></span>Authenticating…
+          </span>
+        </button>
 
-    <p class="login-note">
-      <i class="bi bi-info-circle me-1"></i>
-      This portal is exclusively for CareConnect Platform Administrators.
-      Unauthorized access attempts are logged.
-    </p>
+      </form>
 
+      <p class="login-note">
+        <i class="bi bi-info-circle me-1"></i>
+        Unauthorized access attempts are logged and monitored.
+      </p>
+
+    </div>
   </div>
+
 </div>

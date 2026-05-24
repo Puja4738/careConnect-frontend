@@ -1,58 +1,58 @@
 <div class="pa-layout">
 
   <!-- SIDEBAR -->
-  <nav class="pa-sidebar">
-    <div class="pa-brand">
+  <nav class="fixed-sidebar text-white p-3 d-none d-md-block">
+    <div class="sidebar-brand">
       <i class="bi bi-shield-lock-fill"></i>
-      <span>Admin Portal</span>
+      <span>CareConnect</span>
     </div>
     <ul class="nav flex-column">
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">
+        <a class="nav-link-custom" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">
           <i class="bi bi-speedometer2"></i> Overview
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='compliance'" (click)="activeTab='compliance'">
+        <a class="nav-link-custom" [class.active]="activeTab==='compliance'" (click)="activeTab='compliance'">
           <i class="bi bi-clipboard2-check-fill"></i> Compliance & Audit
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='incidents'" (click)="activeTab='incidents'">
+        <a class="nav-link-custom" [class.active]="activeTab==='incidents'" (click)="activeTab='incidents'">
           <i class="bi bi-exclamation-triangle-fill"></i> Incidents
-          <span *ngIf="openEscalations.length > 0" class="pa-badge">{{ openEscalations.length }}</span>
+          <span *ngIf="openEscalations.length > 0" class="notif-badge">{{ openEscalations.length }}</span>
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='audit'" (click)="activeTab='audit'">
+        <a class="nav-link-custom" [class.active]="activeTab==='audit'" (click)="activeTab='audit'">
           <i class="bi bi-clock-history"></i> Audit Trail
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='staff'" (click)="activeTab='staff'">
+        <a class="nav-link-custom" [class.active]="activeTab==='staff'" (click)="activeTab='staff'">
           <i class="bi bi-person-vcard-fill"></i> Nurse Verification
-          <span *ngIf="nurseNoneCount > 0" class="pa-badge">{{ nurseNoneCount }}</span>
+          <span *ngIf="nurseNoneCount > 0" class="notif-badge">{{ nurseNoneCount }}</span>
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='orgs'" (click)="activeTab='orgs'">
+        <a class="nav-link-custom" [class.active]="activeTab==='orgs'" (click)="activeTab='orgs'">
           <i class="bi bi-building-check"></i> Org Verification
-          <span *ngIf="orgs.length - verifiedOrgCount > 0" class="pa-badge">{{ orgs.length - verifiedOrgCount }}</span>
+          <span *ngIf="orgs.length - verifiedOrgCount > 0" class="notif-badge">{{ orgs.length - verifiedOrgCount }}</span>
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='policies'" (click)="activeTab='policies'">
+        <a class="nav-link-custom" [class.active]="activeTab==='policies'" (click)="activeTab='policies'">
           <i class="bi bi-file-earmark-text-fill"></i> Policies
         </a>
       </li>
       <li class="mb-1">
-        <a class="pa-nav" [class.active]="activeTab==='security'" (click)="activeTab='security'">
+        <a class="nav-link-custom" [class.active]="activeTab==='security'" (click)="activeTab='security'">
           <i class="bi bi-lock-fill"></i> Security & QA
         </a>
       </li>
-      <div class="pa-divider"></div>
+      <div class="sidebar-divider mt-auto"></div>
       <li>
-        <a class="pa-nav pa-logout" (click)="logout()">
+        <a class="nav-link-custom logout-link" style="cursor:pointer;" (click)="logout()">
           <i class="bi bi-box-arrow-right"></i> Logout
         </a>
       </li>
@@ -64,8 +64,8 @@
 
     <!-- LOADING -->
     <div *ngIf="isLoading" class="text-center py-5">
-      <div class="spinner-border" style="color:#388bfd;"></div>
-      <p style="color:#7d8590;margin-top:12px;font-size:0.88rem;">Loading platform data…</p>
+      <div class="spinner-border" style="color:#0f5241;"></div>
+      <p style="color:#6a8c80;margin-top:12px;font-size:0.88rem;">Loading platform data…</p>
     </div>
 
     <ng-container *ngIf="!isLoading">
@@ -109,20 +109,6 @@
               <div class="kpi-lbl">Appointments</div>
             </div>
           </div>
-          <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-              <div class="kpi-icon kpi-teal"><i class="bi bi-star-fill"></i></div>
-              <div class="kpi-num">{{ stats.avgNurseRating ?? 0 }}</div>
-              <div class="kpi-lbl">Avg Nurse Rating</div>
-            </div>
-          </div>
-          <div class="col-6 col-lg-3">
-            <div class="kpi-card">
-              <div class="kpi-icon kpi-green"><i class="bi bi-person-check-fill"></i></div>
-              <div class="kpi-num">{{ nurseCompleteCount }}</div>
-              <div class="kpi-lbl">Fully Onboarded Nurses</div>
-            </div>
-          </div>
         </div>
 
         <!-- SECOND ROW -->
@@ -131,16 +117,16 @@
             <div class="pa-card">
               <div class="pa-card-title"><i class="bi bi-clipboard2-check me-2"></i>Compliance Health</div>
               <div class="d-flex justify-content-between mb-2">
-                <span style="font-size:0.82rem;color:#7d8590;">Platform Compliance Rate</span>
-                <span style="font-weight:700;color:#2ea043;">{{ stats.complianceRate ?? 0 }}%</span>
+                <span style="font-size:0.82rem;color:#6a8c80;">Platform Compliance Rate</span>
+                <span style="font-weight:700;color:#155724;">{{ stats.complianceRate ?? 0 }}%</span>
               </div>
               <div class="comp-bar-outer">
                 <div class="comp-bar-inner" [style.width.%]="stats.complianceRate ?? 0"
-                     [style.background]="(stats.complianceRate ?? 0) >= 70 ? '#2ea043' : '#d29922'"></div>
+                     [style.background]="(stats.complianceRate ?? 0) >= 70 ? '#155724' : '#d97706'"></div>
               </div>
               <div class="d-flex gap-3 mt-2" style="font-size:0.8rem;">
-                <span style="color:#2ea043;font-weight:600;">✔ {{ stats.compliantCount ?? 0 }} Compliant</span>
-                <span style="color:#f85149;font-weight:600;">✘ {{ stats.nonCompliantCount ?? 0 }} Non-Compliant</span>
+                <span style="color:#155724;font-weight:600;">✔ {{ stats.compliantCount ?? 0 }} Compliant</span>
+                <span style="color:#c0392b;font-weight:600;">✘ {{ stats.nonCompliantCount ?? 0 }} Non-Compliant</span>
               </div>
             </div>
           </div>
@@ -148,19 +134,19 @@
             <div class="pa-card">
               <div class="pa-card-title"><i class="bi bi-people-fill me-2"></i>Platform Users ({{ allUsers.length }})</div>
               <div class="d-flex gap-3 flex-wrap">
-                <div class="user-role-chip" style="background:#1f6feb22;color:#388bfd;">
+                <div class="user-role-chip" style="background:#dbeafe;color:#1d4ed8;">
                   <i class="bi bi-heart-pulse me-1"></i>{{ stats.totalNurses ?? 0 }} Nurses
                 </div>
-                <div class="user-role-chip" style="background:#2ea04322;color:#2ea043;">
+                <div class="user-role-chip" style="background:#d4edda;color:#155724;">
                   <i class="bi bi-person-heart me-1"></i>{{ stats.totalPatients ?? 0 }} Patients
                 </div>
-                <div class="user-role-chip" style="background:#d2992222;color:#d29922;">
+                <div class="user-role-chip" style="background:#fff4e0;color:#d97706;">
                   <i class="bi bi-building me-1"></i>{{ stats.totalOrgs ?? 0 }} Orgs
                 </div>
               </div>
-              <div class="mt-2" style="font-size:0.8rem;color:#7d8590;">
-                Hire Rate: <strong style="color:#e6edf3;">{{ stats.hireRate ?? 0 }}%</strong> &nbsp;|&nbsp;
-                Approved: <strong style="color:#e6edf3;">{{ stats.approvedApplications ?? 0 }}</strong> /
+              <div class="mt-2" style="font-size:0.8rem;color:#6a8c80;">
+                Hire Rate: <strong style="color:#0f2d22;">{{ stats.hireRate ?? 0 }}%</strong> &nbsp;|&nbsp;
+                Approved: <strong style="color:#0f2d22;">{{ stats.approvedApplications ?? 0 }}</strong> /
                 {{ stats.totalApplications ?? 0 }} Applications
               </div>
             </div>
@@ -168,7 +154,7 @@
           <div class="col-md-6">
             <div class="pa-card">
               <div class="pa-card-title"><i class="bi bi-award me-2"></i>Credentialing Status</div>
-              <div style="font-size:0.82rem;color:#f85149;">
+              <div style="font-size:0.82rem;color:#c0392b;">
                 <i class="bi bi-exclamation-circle me-1"></i>
                 {{ stats.expiredCredentials ?? 0 }} expired credentials need attention
               </div>
@@ -177,7 +163,7 @@
           <div class="col-md-6">
             <div class="pa-card">
               <div class="pa-card-title"><i class="bi bi-exclamation-triangle me-2"></i>Open Incidents</div>
-              <div [style.color]="openEscalations.length > 0 ? '#f85149' : '#2ea043'" style="font-size:0.82rem;font-weight:600;">
+              <div [style.color]="openEscalations.length > 0 ? '#c0392b' : '#155724'" style="font-size:0.82rem;font-weight:600;">
                 {{ openEscalations.length > 0 ? openEscalations.length + ' open escalations require attention' : '✔ No open incidents' }}
               </div>
             </div>
@@ -200,11 +186,11 @@
           <div class="table-responsive">
             <table class="pa-table">
               <thead>
-                <tr><th>#</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr>
+                <tr><th>#</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr>
               </thead>
               <tbody>
                 <tr *ngFor="let u of filteredUsers; let i = index">
-                  <td style="color:#7d8590;">{{ i + 1 }}</td>
+                  <td style="color:#9ab8b0;">{{ i + 1 }}</td>
                   <td>{{ u.email }}</td>
                   <td>
                     <span class="role-chip" [style.background]="roleColor(u.role) + '22'"
@@ -216,16 +202,9 @@
                     </span>
                   </td>
                   <td>{{ formatDate(u.createdAt) }}</td>
-                  <td>
-                    <button [class]="u.isActive ? 'btn-suspend' : 'btn-activate'"
-                            (click)="toggleUser(u)"
-                            [disabled]="isTogglingUser.has(u.id)">
-                      {{ u.isActive ? 'Suspend' : 'Activate' }}
-                    </button>
-                  </td>
                 </tr>
                 <tr *ngIf="filteredUsers.length === 0">
-                  <td colspan="6" class="text-center" style="color:#7d8590;padding:20px;">No users found.</td>
+                  <td colspan="5" class="text-center" style="color:#9ab8b0;padding:20px;">No users found.</td>
                 </tr>
               </tbody>
             </table>
@@ -238,7 +217,7 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Compliance & Audit Trail</h4>
-            <p class="pa-sub">All compliance records across all organizations (AC 20.1, 20.4)</p>
+            <p class="pa-sub">All compliance records across all organizations</p>
           </div>
         </div>
 
@@ -263,7 +242,7 @@
                 <td>{{ formatDate(c.createdAt) }}</td>
               </tr>
               <tr *ngIf="filteredCompliance.length === 0">
-                <td colspan="6" class="text-center" style="color:#7d8590;padding:20px;">No compliance records found.</td>
+                <td colspan="6" class="text-center" style="color:#9ab8b0;padding:20px;">No compliance records found.</td>
               </tr>
             </tbody>
           </table>
@@ -275,20 +254,20 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Incidents & Escalations</h4>
-            <p class="pa-sub">All org escalations — investigate and track corrective actions (AC 20.3)</p>
+            <p class="pa-sub">All org escalations — investigate and track corrective actions</p>
           </div>
         </div>
 
         <div class="row g-3 mb-3">
           <div class="col-6">
-            <div class="kpi-card" style="border-left:3px solid #f85149;">
-              <div class="kpi-num" style="color:#f85149;">{{ openEscalations.length }}</div>
+            <div class="kpi-card" style="border-left:3px solid #c0392b;">
+              <div class="kpi-num" style="color:#c0392b;">{{ openEscalations.length }}</div>
               <div class="kpi-lbl">Open Incidents</div>
             </div>
           </div>
           <div class="col-6">
-            <div class="kpi-card" style="border-left:3px solid #2ea043;">
-              <div class="kpi-num" style="color:#2ea043;">{{ escalations.length - openEscalations.length }}</div>
+            <div class="kpi-card" style="border-left:3px solid #155724;">
+              <div class="kpi-num" style="color:#155724;">{{ escalations.length - openEscalations.length }}</div>
               <div class="kpi-lbl">Resolved</div>
             </div>
           </div>
@@ -308,7 +287,7 @@
                 <td>{{ e.resolvedAt ? formatDate(e.resolvedAt) : '—' }}</td>
               </tr>
               <tr *ngIf="escalations.length === 0">
-                <td colspan="5" class="text-center" style="color:#7d8590;padding:20px;">No escalations found.</td>
+                <td colspan="5" class="text-center" style="color:#9ab8b0;padding:20px;">No escalations found.</td>
               </tr>
             </tbody>
           </table>
@@ -320,29 +299,30 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Audit Trail</h4>
-            <p class="pa-sub">HIPAA-compliant activity log — medical records, compliance, credentials (AC 7.2, 7.6, 20.4)</p>
+            <p class="pa-sub">HIPAA-compliant activity log — medical records, compliance, credentials</p>
           </div>
         </div>
 
-        <!-- Filter chips -->
         <div class="d-flex gap-2 mb-3 flex-wrap">
           <button *ngFor="let f of ['ALL','MEDICAL_RECORD','COMPLIANCE','CREDENTIAL']"
                   class="role-filter-btn" [class.active]="auditTypeFilter === f"
                   (click)="auditTypeFilter = f">
             {{ f === 'ALL' ? 'All Events' : auditTypeLabel(f) }}
           </button>
-          <span class="ms-auto" style="font-size:0.8rem;color:#7d8590;align-self:center;">
+          <span class="ms-auto" style="font-size:0.8rem;color:#9ab8b0;align-self:center;">
             {{ filteredAudit.length }} events
           </span>
         </div>
 
-        <!-- Timeline -->
         <div class="pa-card">
-          <div *ngIf="filteredAudit.length === 0" class="text-center py-5" style="color:#7d8590;">
+          <div *ngIf="filteredAudit.length === 0" class="text-center py-5" style="color:#9ab8b0;">
             No audit events found.
           </div>
           <div *ngFor="let a of filteredAudit" class="audit-row">
-            <div class="audit-dot" [style.background]="auditTypeColor(a.eventType)"></div>
+            <div class="audit-dot" [style.background]="auditTypeColor(a.eventType) + '22'"
+                 [style.color]="auditTypeColor(a.eventType)">
+              <i class="bi bi-clock-history"></i>
+            </div>
             <div class="audit-content">
               <div class="audit-header">
                 <span class="audit-type-chip"
@@ -355,7 +335,7 @@
               </div>
               <div class="audit-meta">
                 <span>{{ a.entity }}</span>
-                <span class="ms-2" style="color:#484f58;">{{ a.actor }}</span>
+                <span class="ms-2" style="color:#9ab8b0;">{{ a.actor }}</span>
               </div>
             </div>
           </div>
@@ -367,33 +347,31 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Staff Verification</h4>
-            <p class="pa-sub">Nurse onboarding status — credentials, training, ratings (AC 1.4, 5.3, 5.7)</p>
+            <p class="pa-sub">Nurse onboarding status — credentials, training, ratings</p>
           </div>
         </div>
 
-        <!-- Onboarding summary -->
         <div class="row g-3 mb-4">
           <div class="col-4">
-            <div class="kpi-card" style="border-left:3px solid #2ea043;">
-              <div class="kpi-num" style="color:#2ea043;">{{ nurseCompleteCount }}</div>
+            <div class="kpi-card" style="border-left:3px solid #155724;">
+              <div class="kpi-num" style="color:#155724;">{{ nurseCompleteCount }}</div>
               <div class="kpi-lbl">Fully Onboarded</div>
             </div>
           </div>
           <div class="col-4">
-            <div class="kpi-card" style="border-left:3px solid #d29922;">
-              <div class="kpi-num" style="color:#d29922;">{{ nursePartialCount }}</div>
+            <div class="kpi-card" style="border-left:3px solid #d97706;">
+              <div class="kpi-num" style="color:#d97706;">{{ nursePartialCount }}</div>
               <div class="kpi-lbl">Partial Onboarding</div>
             </div>
           </div>
           <div class="col-4">
-            <div class="kpi-card" style="border-left:3px solid #f85149;">
-              <div class="kpi-num" style="color:#f85149;">{{ nurseNoneCount }}</div>
+            <div class="kpi-card" style="border-left:3px solid #c0392b;">
+              <div class="kpi-num" style="color:#c0392b;">{{ nurseNoneCount }}</div>
               <div class="kpi-lbl">Not Started</div>
             </div>
           </div>
         </div>
 
-        <!-- Filter + Table -->
         <div class="d-flex gap-2 mb-3 flex-wrap">
           <button *ngFor="let f of ['ALL','COMPLETE','PARTIAL','NONE']"
                   class="role-filter-btn" [class.active]="staffOnboardFilter === f"
@@ -402,10 +380,9 @@
           </button>
         </div>
 
-        <!-- Verification summary bar -->
         <div class="verify-summary mb-3">
           <span class="verify-stat">
-            <i class="bi bi-patch-check-fill" style="color:#2ea043;"></i>
+            <i class="bi bi-patch-check-fill" style="color:#155724;"></i>
             {{ verifiedNurseCount }} / {{ nurseProfiles.length }} Licenses Verified
           </span>
           <div class="verify-bar-outer">
@@ -419,28 +396,21 @@
           <table class="pa-table">
             <thead>
               <tr>
-                <th>Nurse</th>
-                <th>License #</th>
-                <th>Specialization</th>
-                <th>Rating</th>
-                <th>Credentials</th>
-                <th>Training</th>
-                <th>License Status</th>
+                <th>Nurse</th><th>License #</th><th>Specialization</th><th>Rating</th>
+                <th>Credentials</th><th>Training</th><th>License Status</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let n of filteredNurses">
                 <td><strong>{{ n.fullName }}</strong></td>
-                <td style="font-family:monospace;font-size:0.8rem;">
-                  {{ n.licenseNumber || '—' }}
-                </td>
+                <td style="font-family:monospace;font-size:0.8rem;color:#6a8c80;">{{ n.licenseNumber || '—' }}</td>
                 <td>{{ n.specialization || '—' }}</td>
                 <td>
                   <span *ngIf="n.rating">
-                    <i class="bi bi-star-fill" style="color:#d29922;font-size:0.8rem;"></i>
+                    <i class="bi bi-star-fill" style="color:#d97706;font-size:0.8rem;"></i>
                     {{ n.rating }}
                   </span>
-                  <span *ngIf="!n.rating" style="color:#484f58;">—</span>
+                  <span *ngIf="!n.rating" style="color:#9ab8b0;">—</span>
                 </td>
                 <td>
                   <span [class]="n.credentialCount > 0 ? 'check-ok' : 'check-fail'">
@@ -466,7 +436,7 @@
                 </td>
               </tr>
               <tr *ngIf="filteredNurses.length === 0">
-                <td colspan="8" class="text-center" style="color:#7d8590;padding:20px;">No nurses found.</td>
+                <td colspan="7" class="text-center" style="color:#9ab8b0;padding:20px;">No nurses found.</td>
               </tr>
             </tbody>
           </table>
@@ -478,14 +448,13 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Organization Verification</h4>
-            <p class="pa-sub">Verify organization registration numbers and licenses (AC 20.3, 15.5)</p>
+            <p class="pa-sub">Verify organization registration numbers and licenses</p>
           </div>
         </div>
 
-        <!-- Verification progress bar -->
         <div class="verify-summary mb-3">
           <span class="verify-stat">
-            <i class="bi bi-building-check" style="color:#2ea043;"></i>
+            <i class="bi bi-building-check" style="color:#155724;"></i>
             {{ verifiedOrgCount }} / {{ orgs.length }} Organizations Verified
           </span>
           <div class="verify-bar-outer">
@@ -499,22 +468,16 @@
           <table class="pa-table">
             <thead>
               <tr>
-                <th>Organization</th>
-                <th>Type</th>
-                <th>Reg. Number</th>
-                <th>License Number</th>
-                <th>Accreditation</th>
-                <th>Phone</th>
-                <th>Joined</th>
-                <th>Verification</th>
+                <th>Organization</th><th>Type</th><th>Reg. Number</th><th>License Number</th>
+                <th>Accreditation</th><th>Phone</th><th>Joined</th><th>Verification</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let o of orgs">
                 <td><strong>{{ o.orgName }}</strong></td>
                 <td>{{ o.orgType || '—' }}</td>
-                <td style="font-family:monospace;font-size:0.8rem;">{{ o.regNumber || '—' }}</td>
-                <td style="font-family:monospace;font-size:0.8rem;">{{ o.licenseNumber || '—' }}</td>
+                <td style="font-family:monospace;font-size:0.8rem;color:#6a8c80;">{{ o.regNumber || '—' }}</td>
+                <td style="font-family:monospace;font-size:0.8rem;color:#6a8c80;">{{ o.licenseNumber || '—' }}</td>
                 <td>{{ o.accreditation || '—' }}</td>
                 <td>{{ o.phone || '—' }}</td>
                 <td>{{ formatDate(o.createdAt) }}</td>
@@ -532,7 +495,7 @@
                 </td>
               </tr>
               <tr *ngIf="orgs.length === 0">
-                <td colspan="8" class="text-center" style="color:#7d8590;padding:20px;">No organizations found.</td>
+                <td colspan="8" class="text-center" style="color:#9ab8b0;padding:20px;">No organizations found.</td>
               </tr>
             </tbody>
           </table>
@@ -544,10 +507,10 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Platform Policies</h4>
-            <p class="pa-sub">Manage regulatory and compliance policies (AC 20.5)</p>
+            <p class="pa-sub">Manage regulatory and compliance policies</p>
           </div>
           <button class="pa-btn-primary" (click)="policyFormOpen = !policyFormOpen">
-            <i class="bi bi-plus-lg me-1"></i>Add Policy
+            <i class="bi bi-plus-lg"></i> Add Policy
           </button>
         </div>
 
@@ -574,7 +537,7 @@
                 </select>
               </div>
               <div class="col-md-4">
-                <label class="pa-field-label">Effective Date <span style="color:#7d8590;">(optional)</span></label>
+                <label class="pa-field-label">Effective Date <span style="color:#9ab8b0;font-weight:400;">(optional)</span></label>
                 <input type="date" class="pa-field-input" formControlName="effectiveDate">
               </div>
               <div class="col-12">
@@ -589,7 +552,7 @@
             </div>
             <div class="d-flex gap-2 mt-3">
               <button type="submit" class="pa-btn-primary" [disabled]="isSavingPolicy">
-                <span *ngIf="!isSavingPolicy"><i class="bi bi-check-lg me-1"></i>Save Policy</span>
+                <span *ngIf="!isSavingPolicy"><i class="bi bi-check-lg"></i> Save Policy</span>
                 <span *ngIf="isSavingPolicy">Saving…</span>
               </button>
               <button type="button" class="pa-btn-outline" (click)="policyFormOpen=false;policyForm.reset({category:'GENERAL'})">
@@ -601,16 +564,16 @@
         </div>
 
         <!-- POLICY LIST -->
-        <div *ngIf="policies.length === 0 && !policyFormOpen" class="pa-card text-center py-5" style="color:#7d8590;">
-          <i class="bi bi-file-earmark-text" style="font-size:2.5rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
+        <div *ngIf="policies.length === 0 && !policyFormOpen" class="empty-state">
+          <i class="bi bi-file-earmark-text fs-2 d-block mb-2" style="opacity:0.4;"></i>
           No policies added yet. Click "Add Policy" to get started.
         </div>
 
         <div *ngFor="let p of policies" class="policy-card">
           <div class="policy-header">
-            <span class="policy-cat" [style.background]="'#1f6feb22'" [style.color]="'#388bfd'">{{ p.category }}</span>
+            <span class="policy-cat">{{ p.category }}</span>
             <div class="policy-title">{{ p.title }}</div>
-            <span *ngIf="p.effectiveDate" style="font-size:0.76rem;color:#7d8590;margin-left:auto;white-space:nowrap;">
+            <span *ngIf="p.effectiveDate" style="font-size:0.76rem;color:#9ab8b0;margin-left:auto;white-space:nowrap;">
               Effective: {{ p.effectiveDate }}
             </span>
             <button class="pa-del-btn" (click)="deletePolicy(p.id)"><i class="bi bi-trash3"></i></button>
@@ -625,10 +588,10 @@
         <div class="pa-header">
           <div>
             <h4 class="pa-title">Security & QA Report</h4>
-            <p class="pa-sub">Platform security compliance checklist (AC 20.7, 20.6)</p>
+            <p class="pa-sub">Platform security compliance checklist</p>
           </div>
           <button class="pa-btn-primary" (click)="generateReport()">
-            <i class="bi bi-printer-fill me-1"></i>Generate QA Report
+            <i class="bi bi-printer-fill"></i> Generate QA Report
           </button>
         </div>
 
@@ -644,7 +607,7 @@
                 <div [class]="securityScore >= 70 ? 'comp-bar-inner comp-bar-ok' : 'comp-bar-inner comp-bar-warn'"
                      [style.width.%]="securityScore"></div>
               </div>
-              <div style="font-size:0.8rem;color:#7d8590;margin-top:4px;">
+              <div style="font-size:0.8rem;color:#6a8c80;margin-top:4px;">
                 {{ implementedChecksCount }} of {{ SECURITY_CHECKS.length }} controls implemented
               </div>
             </div>

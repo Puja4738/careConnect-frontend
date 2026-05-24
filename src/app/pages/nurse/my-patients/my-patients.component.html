@@ -99,26 +99,29 @@
 
       <!-- Patient header -->
       <div class="patient-header">
-        <div class="patient-avatar">
-          {{ patient.patientName?.charAt(0)?.toUpperCase() || '?' }}
-        </div>
-        <div class="patient-info">
-          <h5 class="patient-name">{{ patient.patientName }}</h5>
-          <span class="patient-appt-meta">
-            {{ appointmentsFor(patient.patientId).length }} appointment{{ appointmentsFor(patient.patientId).length !== 1 ? 's' : '' }}
-          </span>
+        <div class="patient-header-clickable" (click)="openCarePanel(patient, 'records')">
+          <div class="patient-avatar">
+            {{ patient.patientName?.charAt(0)?.toUpperCase() || '?' }}
+          </div>
+          <div class="patient-info">
+            <h5 class="patient-name">{{ patient.patientName }}</h5>
+            <span class="patient-appt-meta">
+              {{ appointmentsFor(patient.patientId).length }} appointment{{ appointmentsFor(patient.patientId).length !== 1 ? 's' : '' }}
+              <span style="color:#1aa37a;font-size:0.72rem;margin-left:6px;"><i class="bi bi-box-arrow-up-right"></i> Open Care Tools</span>
+            </span>
+          </div>
         </div>
         <!-- Care Tools Buttons -->
         <div class="care-tools-btns">
-          <button class="care-btn care-btn-records" (click)="openCarePanel(patient, 'records')"
+          <button class="care-btn care-btn-records" (click)="openCarePanel(patient, 'records'); $event.stopPropagation()"
                   title="View medical records">
             <i class="bi bi-journal-medical me-1"></i>Records
           </button>
-          <button class="care-btn care-btn-vitals" (click)="openCarePanel(patient, 'vitals')"
+          <button class="care-btn care-btn-vitals" (click)="openCarePanel(patient, 'vitals'); $event.stopPropagation()"
                   title="Log vital signs">
             <i class="bi bi-heart-pulse me-1"></i>Vitals
           </button>
-          <button class="care-btn care-btn-notes" (click)="openCarePanel(patient, 'notes')"
+          <button class="care-btn care-btn-notes" (click)="openCarePanel(patient, 'notes'); $event.stopPropagation()"
                   title="Add care note">
             <i class="bi bi-journal-text me-1"></i>Notes
           </button>
@@ -607,48 +610,87 @@
     <!-- ── MEDICATIONS TAB ────────────────────────────── -->
     <ng-container *ngIf="carePanelTab === 'medications'">
 
-      <p class="care-section-label">Add medications prescribed to this patient</p>
-
       <!-- Add form -->
-      <div class="ct-goal-form mb-3">
-        <div class="row g-2">
-          <div class="col-12">
-            <label class="vital-label">Medication Name *</label>
-            <input class="vital-input" [(ngModel)]="medName" placeholder="e.g. Paracetamol" maxlength="100">
+      <div class="med-form">
+        <div class="med-form-title">
+          <i class="bi bi-plus-circle-fill me-2"></i>Add Medication
+        </div>
+
+        <div class="med-field-group">
+          <label class="med-label">Medication Name <span class="med-required">*</span></label>
+          <select class="med-select" [(ngModel)]="medName">
+            <option value="">Select medication…</option>
+            <option *ngFor="let m of MEDICINE_NAMES" [value]="m">{{ getMedicineName(m) }}</option>
+          </select>
+          <input *ngIf="medName === '__other__'" class="med-input mt-2"
+                 [(ngModel)]="medNameCustom" placeholder="Type medication name…" maxlength="100">
+        </div>
+
+        <div class="med-row-2">
+          <div class="med-field-group">
+            <label class="med-label">Dosage</label>
+            <select class="med-select" [(ngModel)]="medDosage">
+              <option value="">Select dosage…</option>
+              <option *ngFor="let d of DOSAGE_OPTIONS" [value]="d">{{ d }}</option>
+            </select>
           </div>
-          <div class="col-6">
-            <label class="vital-label">Dosage</label>
-            <input class="vital-input" [(ngModel)]="medDosage" placeholder="e.g. 500mg" maxlength="60">
-          </div>
-          <div class="col-6">
-            <label class="vital-label">Frequency</label>
-            <input class="vital-input" [(ngModel)]="medFrequency" placeholder="e.g. Twice daily" maxlength="60">
-          </div>
-          <div class="col-12">
-            <label class="vital-label">Notes (optional)</label>
-            <input class="vital-input" [(ngModel)]="medNotes" placeholder="e.g. Take after food" maxlength="200">
+          <div class="med-field-group">
+            <label class="med-label">Frequency</label>
+            <select class="med-select" [(ngModel)]="medFrequency">
+              <option value="">Select frequency…</option>
+              <option *ngFor="let f of FREQUENCY_OPTIONS" [value]="f">{{ f }}</option>
+            </select>
           </div>
         </div>
-        <div class="care-err mt-2" *ngIf="medError">{{ medError }}</div>
-        <div class="care-success mt-2" *ngIf="medSuccess"><i class="bi bi-check-circle me-1"></i>Medication added!</div>
-        <button class="care-save-btn mt-2" (click)="addMedication()" [disabled]="isSavingMed">
-          <span *ngIf="!isSavingMed"><i class="bi bi-plus-circle me-1"></i>Add Medication</span>
-          <span *ngIf="isSavingMed"><span class="spinner-border spinner-border-sm me-1"></span>Saving…</span>
+
+        <div class="med-field-group">
+          <label class="med-label">Instructions <span class="med-optional">(optional)</span></label>
+          <input class="med-input" [(ngModel)]="medNotes"
+                 placeholder="e.g. Take after food, avoid alcohol…" maxlength="200">
+        </div>
+
+        <div class="care-err mt-2" *ngIf="medError">
+          <i class="bi bi-exclamation-circle me-1"></i>{{ medError }}
+        </div>
+        <div class="care-success mt-2" *ngIf="medSuccess">
+          <i class="bi bi-check-circle me-1"></i>Medication added successfully!
+        </div>
+
+        <button class="med-add-btn" (click)="addMedication()" [disabled]="isSavingMed">
+          <span *ngIf="!isSavingMed"><i class="bi bi-plus-lg me-1"></i>Add Medication</span>
+          <span *ngIf="isSavingMed" class="d-flex align-items-center gap-2">
+            <span class="spinner-border spinner-border-sm"></span> Saving…
+          </span>
         </button>
       </div>
 
       <!-- Medications list -->
-      <p class="care-section-label mt-3">Current Medications</p>
-      <div *ngIf="getMeds(carePanelPatient.patientUserId).length === 0" class="care-empty-msg">
+      <div class="med-list-header">
+        <p class="care-section-label mb-0">Current Medications</p>
+        <span class="med-count">{{ getMeds(carePanelPatient.patientUserId).length }}</span>
+      </div>
+
+      <div *ngIf="getMeds(carePanelPatient.patientUserId).length === 0" class="med-empty">
+        <i class="bi bi-capsule" style="font-size:2rem;color:#c8ddd8;display:block;margin-bottom:8px;"></i>
         No medications added yet.
       </div>
-      <div *ngFor="let m of getMeds(carePanelPatient.patientUserId)" class="ct-goal-item">
-        <div class="ct-goal-text">
-          <span class="fw-semibold"><i class="bi bi-capsule me-1 text-success"></i>{{ m.title }}</span>
-          <span *ngIf="m.description" class="ct-note-date">{{ m.description }}</span>
-          <span class="ct-note-date">Added {{ m.createdAt | date:'d MMM y' }}</span>
+
+      <div class="med-list">
+        <div *ngFor="let m of getMeds(carePanelPatient.patientUserId)" class="med-card">
+          <div class="med-card-icon"><i class="bi bi-capsule-pill"></i></div>
+          <div class="med-card-body">
+            <div class="med-card-name">{{ m.title }}</div>
+            <div class="med-card-meta" *ngIf="m.description">
+              <i class="bi bi-info-circle me-1"></i>{{ m.description }}
+            </div>
+            <div class="med-card-date">
+              <i class="bi bi-clock me-1"></i>Added {{ m.createdAt | date:'d MMM y' }}
+            </div>
+          </div>
+          <button class="med-del-btn" (click)="deleteMed(m)" title="Remove">
+            <i class="bi bi-trash3"></i>
+          </button>
         </div>
-        <button class="ct-remove-btn" (click)="deleteMed(m)"><i class="bi bi-x"></i></button>
       </div>
 
     </ng-container>

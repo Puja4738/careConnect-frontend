@@ -1,119 +1,130 @@
-<div class="login-container">
-  <div class="login-card">
+<div class="login-page">
 
-    <!-- Logo -->
-    <div class="logo">
-      <div class="icon">❤</div>
-      <h2>CareConnect</h2>
-      <p>Connecting Healthcare Professionals</p>
+  <!-- Full-page background image -->
+  <img src="assets/login-hero.jpeg" alt="" class="hero-bg">
+  <div class="hero-overlay"></div>
+
+  <!-- Top-left branding -->
+  <div class="hero-content">
+    <div class="hero-brand" routerLink="/home" style="cursor:pointer;">
+      <i class="bi bi-heart-pulse-fill"></i>
+      CareConnect
     </div>
-
-    <!-- Role Selection -->
-    <div class="role-section">
-      <p class="label">SELECT YOUR ROLE</p>
-      <div class="roles">
-        <div class="role-card" [class.active]="selectedRole === 'patient'" (click)="selectRole('patient')">
-          🧑‍🦽<span>Patient</span>
-        </div>
-        <div class="role-card" [class.active]="selectedRole === 'nurse'" (click)="selectRole('nurse')">
-          👩‍⚕️<span>Nurse</span>
-        </div>
-        <div class="role-card" [class.active]="selectedRole === 'organization'" (click)="selectRole('organization')">
-          🏥<span>Organization</span>
-        </div>
-      </div>
+    <h1 class="hero-headline">Your Health,<br>Our Priority</h1>
+    <p class="hero-sub">Connecting nurses, patients and healthcare<br>organizations — all in one place.</p>
+    <div class="hero-chips">
+      <span class="hero-chip"><i class="bi bi-shield-check"></i> Verified Nurses</span>
+      <span class="hero-chip"><i class="bi bi-clock"></i> 24/7 Care</span>
+      <span class="hero-chip"><i class="bi bi-graph-up-arrow"></i> Real-time Tracking</span>
     </div>
-
-    <!-- Form -->
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
-
-      <!-- Identifier -->
-      <div class="form-group">
-        <label>{{ identifierLabel }}</label>
-        <input
-          [type]="identifierType"
-          [placeholder]="identifierPlaceholder"
-          formControlName="identifier"
-          [class.input-error]="identifier.invalid && (identifier.dirty || identifier.touched)"
-          [class.field-text]="selectedRole === 'organization'"
-          autocomplete="username"
-          (input)="selectedRole === 'organization' && toUpperIdentifier($event)"
-        >
-        <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('required')">
-          This field is required.
-        </small>
-        <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('pattern') && selectedRole !== 'organization'">
-          Enter a valid Email Address.
-        </small>
-        <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('pattern') && selectedRole === 'organization'">
-          Enter your Registration Number or License Number (letters and digits only, 6–8 characters).
-        </small>
-      </div>
-
-      <!-- Password -->
-      <div class="form-group password-group">
-        <label>Password</label>
-        <div class="pass-wrap">
-          <input
-            [type]="showPassword ? 'text' : 'password'"
-            placeholder="Enter your password (min 12 characters)"
-            formControlName="password"
-            [class.input-error]="password.invalid && (password.dirty || password.touched)"
-            autocomplete="current-password"
-            (paste)="$event.preventDefault()"
-          >
-          <button type="button" class="eye-btn" (click)="showPassword = !showPassword" tabindex="-1">
-            <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
-          </button>
-        </div>
-        <small *ngIf="(password.dirty || password.touched) && password.hasError('required')">Password is required.</small>
-        <small *ngIf="(password.dirty || password.touched) && password.hasError('minlength')">Minimum 12 characters required.</small>
-      </div>
-
-      <!-- Submit Button — disabled when form invalid or loading -->
-      <button
-        type="submit"
-        class="login-btn"
-        [disabled]="loginForm.invalid || isLoading"
-        [class.btn-loading]="isLoading"
-      >
-        <span *ngIf="!isLoading">
-          <i class="bi bi-box-arrow-in-right me-1"></i>
-          Login as {{ selectedRole === 'organization' ? 'Organization' : (selectedRole | titlecase) }}
-        </span>
-        <span *ngIf="isLoading" class="spinner-wrap">
-          <span class="btn-spinner"></span> Logging in…
-        </span>
-      </button>
-
-    </form>
-
-    <p class="register">
-      New user? <span routerLink="/register">Register here</span>
-    </p>
-
   </div>
+
+  <!-- Login form card — floating on top -->
+  <div class="form-panel">
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="logo">
+        <div class="icon">
+          <i class="bi bi-heart-pulse-fill"></i>
+        </div>
+        <h2>Welcome Back</h2>
+        <p>Sign in to your CareConnect account</p>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="role-section">
+        <p class="label">SELECT YOUR ROLE</p>
+        <div class="roles">
+          <div class="role-card" [class.active]="selectedRole === 'patient'" (click)="selectRole('patient')">
+            🧑‍🦽<span>Patient</span>
+          </div>
+          <div class="role-card" [class.active]="selectedRole === 'nurse'" (click)="selectRole('nurse')">
+            👩‍⚕️<span>Nurse</span>
+          </div>
+          <div class="role-card" [class.active]="selectedRole === 'organization'" (click)="selectRole('organization')">
+            🏥<span>Organization</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+        <div class="form-group">
+          <label>{{ identifierLabel }}</label>
+          <input
+            [type]="identifierType"
+            [placeholder]="identifierPlaceholder"
+            formControlName="identifier"
+            [class.input-error]="identifier.invalid && (identifier.dirty || identifier.touched)"
+            [class.field-text]="selectedRole === 'organization'"
+            autocomplete="username"
+            (input)="selectedRole === 'organization' && toUpperIdentifier($event)"
+          >
+          <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('required')">This field is required.</small>
+          <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('pattern') && selectedRole !== 'organization'">Enter a valid Email Address.</small>
+          <small *ngIf="(identifier.dirty || identifier.touched) && identifier.hasError('pattern') && selectedRole === 'organization'">Enter your Registration Number or License Number (letters and digits only, 6–8 characters).</small>
+        </div>
+
+        <div class="form-group password-group">
+          <label>Password</label>
+          <div class="pass-wrap">
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Enter your password (min 12 characters)"
+              formControlName="password"
+              [class.input-error]="password.invalid && (password.dirty || password.touched)"
+              autocomplete="current-password"
+              (paste)="$event.preventDefault()"
+            >
+            <button type="button" class="eye-btn" (click)="showPassword = !showPassword" tabindex="-1">
+              <i class="bi" [class.bi-eye]="!showPassword" [class.bi-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+          <small *ngIf="(password.dirty || password.touched) && password.hasError('required')">Password is required.</small>
+          <small *ngIf="(password.dirty || password.touched) && password.hasError('minlength')">Minimum 12 characters required.</small>
+        </div>
+
+        <button
+          type="submit"
+          class="login-btn"
+          [disabled]="loginForm.invalid || isLoading"
+          [class.btn-loading]="isLoading"
+        >
+          <span *ngIf="!isLoading">
+            <i class="bi bi-box-arrow-in-right me-1"></i>
+            Login as {{ selectedRole === 'organization' ? 'Organization' : (selectedRole | titlecase) }}
+          </span>
+          <span *ngIf="isLoading" class="spinner-wrap">
+            <span class="btn-spinner"></span> Logging in…
+          </span>
+        </button>
+
+      </form>
+
+      <p class="register">
+        New user? <span routerLink="/register">Register here</span>
+      </p>
+
+    </div>
+  </div>
+
 </div>
 
-<!-- ── MODAL OVERLAY ───────────────────────────────────────── -->
+<!-- ── MODAL ───────────────────────────────────────────────── -->
 <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
   <div class="modal-card" [class.modal-success]="modalType === 'success'"
        [class.modal-error]="modalType === 'error'" (click)="$event.stopPropagation()">
-
-    <!-- Icon -->
     <div class="modal-icon-wrap">
       <div class="modal-icon" [class.icon-success]="modalType === 'success'"
            [class.icon-error]="modalType === 'error'">
         <i class="bi" [ngClass]="modalType === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'"></i>
       </div>
     </div>
-
     <h3 class="modal-title">{{ modalTitle }}</h3>
     <p class="modal-message">{{ modalMessage }}</p>
-
     <button class="modal-btn" [class.modal-btn-success]="modalType === 'success'"
-            [class.modal-btn-error]="modalType === 'error'" (click)="closeModal()">
-      OK
-    </button>
+            [class.modal-btn-error]="modalType === 'error'" (click)="closeModal()">OK</button>
   </div>
 </div>

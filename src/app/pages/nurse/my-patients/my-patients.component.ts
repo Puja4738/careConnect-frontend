@@ -114,12 +114,56 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
   // ── Medications ───────────────────────────────────────────────────────────
   patientMeds:    Record<number, any[]> = {};
   medName         = '';
+  medNameCustom   = '';
   medDosage       = '';
   medFrequency    = '';
   medNotes        = '';
   isSavingMed     = false;
   medError        = '';
   medSuccess      = false;
+
+  readonly MEDICINE_NAMES = [
+    'Paracetamol', 'Ibuprofen', 'Aspirin', 'Diclofenac', 'Tramadol',
+    'Amoxicillin', 'Azithromycin', 'Ciprofloxacin', 'Metronidazole', 'Doxycycline',
+    'Amlodipine', 'Metoprolol', 'Atorvastatin', 'Losartan', 'Enalapril',
+    'Clopidogrel', 'Furosemide', 'Digoxin',
+    'Metformin', 'Glibenclamide', 'Sitagliptin', 'Insulin (Regular)',
+    'Omeprazole', 'Pantoprazole', 'Ondansetron', 'Domperidone',
+    'Cetirizine', 'Montelukast', 'Salbutamol',
+    'Prednisolone', 'Dexamethasone',
+    'Vitamin D3', 'Vitamin B12', 'Folic Acid', 'Iron Supplement', 'Calcium + Vitamin D',
+    '__other__'
+  ];
+
+  readonly MEDICINE_NAME_LABELS: Record<string, string> = {
+    '__other__': 'Other (specify below)'
+  };
+
+  getMedicineName(val: string): string {
+    return this.MEDICINE_NAME_LABELS[val] ?? val;
+  }
+
+  readonly DOSAGE_OPTIONS = [
+    '25mg', '50mg', '75mg', '100mg', '125mg', '150mg', '200mg',
+    '250mg', '500mg', '650mg', '750mg', '1g', '5ml', '10ml'
+  ];
+
+  readonly FREQUENCY_OPTIONS = [
+    'Once daily (OD)',
+    'Twice daily (BD)',
+    'Three times daily (TDS)',
+    'Four times daily (QID)',
+    'Every 4 hours',
+    'Every 6 hours',
+    'Every 8 hours',
+    'Every 12 hours',
+    'Before meals',
+    'After meals',
+    'At bedtime (HS)',
+    'As needed (SOS/PRN)',
+    'Once weekly',
+    'Alternate days'
+  ];
 
   // ── Care Goals ─────────────────────────────────────────────────────────────
   careGoals:      Record<number, any[]> = {};
@@ -343,6 +387,7 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
     this.goalError       = '';
     this.goalSuccess     = false;
     this.medName         = '';
+    this.medNameCustom   = '';
     this.medDosage       = '';
     this.medFrequency    = '';
     this.medNotes        = '';
@@ -366,21 +411,23 @@ export class MyPatientsComponent implements OnInit, OnDestroy, AfterViewChecked 
   addMedication(): void {
     const pid = this.carePanelPatient?.patientUserId;
     if (!pid) return;
-    if (!this.medName.trim()) { this.medError = 'Medication name is required.'; return; }
+    const resolvedName = this.medName === '__other__' ? this.medNameCustom.trim() : this.medName;
+    if (!resolvedName) { this.medError = 'Medication name is required.'; return; }
     this.isSavingMed = true;
     this.medError    = '';
-    const title = this.medName.trim()
-      + (this.medDosage.trim() ? ` — ${this.medDosage.trim()}` : '')
-      + (this.medFrequency.trim() ? ` (${this.medFrequency.trim()})` : '');
+    const title = resolvedName
+      + (this.medDosage ? ` — ${this.medDosage}` : '')
+      + (this.medFrequency ? ` (${this.medFrequency})` : '');
     this.recordSvc.upload(pid, this.myUserId, 'Medication', title, this.medNotes.trim() || undefined)
       .subscribe({
         next: (saved) => {
           if (!this.patientMeds[pid]) this.patientMeds[pid] = [];
           this.patientMeds[pid].unshift(saved);
-          this.medName      = '';
-          this.medDosage    = '';
-          this.medFrequency = '';
-          this.medNotes     = '';
+          this.medName        = '';
+          this.medNameCustom  = '';
+          this.medDosage      = '';
+          this.medFrequency   = '';
+          this.medNotes       = '';
           this.isSavingMed  = false;
           this.medSuccess   = true;
           setTimeout(() => this.medSuccess = false, 3000);
